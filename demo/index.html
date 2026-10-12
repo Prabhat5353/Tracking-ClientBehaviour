@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CausalFunnel Demo Store — E-Commerce User Behavior &amp; Session Tracking</title>
+  <meta name="description" content="Interactive e-commerce demo store for testing CausalFunnel client-side analytics tracking, user journeys, and click heatmaps.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Ambient background lighting -->
+  <div class="ambient-glow"></div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <a href="#" class="brand" id="nav-brand">
+        <div class="brand-icon">⚡</div>
+        <span>CausalStore</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#features" class="nav-link" id="nav-features">Features</a></li>
+        <li><a href="#pricing" class="nav-link" id="nav-pricing">Pricing</a></li>
+        <li><a href="#docs" class="nav-link" id="nav-docs">Docs</a></li>
+        <li><a href="#changelog" class="nav-link" id="nav-changelog">Changelog</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="btn btn-secondary btn-sm" id="btn-login">Sign In</button>
+        <button class="btn btn-primary btn-sm" id="btn-nav-buy">Buy Now</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-badge">🚀 Next-Gen Autonomous Cloud Platform</div>
+      <h1>Build, Deploy & Scale<br>AI Workloads Instantly</h1>
+      <p>
+        Zero configuration serverless clusters with sub-millisecond edge routing,
+        automatic horizontal autoscaling, and end-to-end security out of the box.
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="btn-hero-buy">Buy Now — $49/mo</button>
+        <button class="btn btn-secondary" id="btn-hero-learn">Learn More</button>
+        <button class="btn btn-secondary" id="btn-hero-sandbox">Explore Sandbox</button>
+      </div>
+    </section>
+
+    <!-- Stats Ribbon -->
+    <section class="stats-ribbon">
+      <div class="stat-item" id="stat-latency">
+        <div class="stat-value">&lt; 1.8ms</div>
+        <div class="stat-label">Global P99 Latency</div>
+      </div>
+      <div class="stat-item" id="stat-uptime">
+        <div class="stat-value">99.999%</div>
+        <div class="stat-label">Enterprise SLA</div>
+      </div>
+      <div class="stat-item" id="stat-events">
+        <div class="stat-value">12.5B+</div>
+        <div class="stat-label">Daily Micro-transactions</div>
+      </div>
+      <div class="stat-item" id="stat-regions">
+        <div class="stat-value">180+</div>
+        <div class="stat-label">Edge PoP Locations</div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+      <div class="section-header">
+        <h2>Engineered for Extreme Velocity</h2>
+        <p>Everything your engineering team needs to conquer complex distributed systems.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card" id="card-feature-compute">
+          <div class="feature-icon">⚡</div>
+          <h3>Instant Elastic Compute</h3>
+          <p>Spin up dedicated GPU and micro-VM clusters in 250 milliseconds with zero cold start penalties.</p>
+          <button class="btn btn-secondary btn-sm" id="btn-feature-compute">Configure Compute</button>
+        </div>
+
+        <div class="feature-card" id="card-feature-edge">
+          <div class="feature-icon">🌐</div>
+          <h3>Global Edge Network</h3>
+          <p>Deploy code to 180+ metropolitan locations worldwide with Anycast IP routing and smart DDoS mitigation.</p>
+          <button class="btn btn-secondary btn-sm" id="btn-feature-edge">View Topology</button>
+        </div>
+
+        <div class="feature-card" id="card-feature-observability">
+          <div class="feature-icon">📊</div>
+          <h3>Zero-Overhead Telemetry</h3>
+          <p>High-resolution session tracing, distributed metrics, and click heatmaps with sub-second ingestion.</p>
+          <button class="btn btn-secondary btn-sm" id="btn-feature-telemetry">Launch Metrics</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing-section" id="pricing">
+      <div class="section-header">
+        <h2>Predictable, Transparent Pricing</h2>
+        <p>No hidden fees. Upgrade, downgrade, or cancel anytime with one click.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Starter Plan -->
+        <div class="pricing-card" id="card-plan-starter">
+          <div class="price-title">Starter</div>
+          <div class="price-desc">Ideal for hobbyists, side projects, and experiments.</div>
+          <div class="price-amount">$0 <span>/ mo</span></div>
+          <ul class="pricing-features">
+            <li>Up to 10,000 monthly events</li>
+            <li>3 Global edge functions</li>
+            <li>Community Discord support</li>
+            <li>Standard 24h data retention</li>
+          </ul>
+          <button class="btn btn-secondary" id="btn-plan-starter">Get Started Free</button>
+        </div>
+
+        <!-- Pro Plan (Featured) -->
+        <div class="pricing-card featured" id="card-plan-pro">
+          <div class="featured-badge">Most Popular</div>
+          <div class="price-title">Pro Tier</div>
+          <div class="price-desc">For growing startups and scaling production applications.</div>
+          <div class="price-amount">$49 <span>/ mo</span></div>
+          <ul class="pricing-features">
+            <li>Up to 1,000,000 monthly events</li>
+            <li>Unlimited edge functions</li>
+            <li>Heatmap visualizer &amp; session journeys</li>
+            <li>Priority 24/7 engineering support</li>
+            <li>30-day full event replay retention</li>
+          </ul>
+          <button class="btn btn-primary" id="btn-plan-pro">Buy Now — Pro Tier</button>
+        </div>
+
+        <!-- Enterprise Plan -->
+        <div class="pricing-card" id="card-plan-enterprise">
+          <div class="price-title">Enterprise</div>
+          <div class="price-desc">Custom hardware isolation, dedicated VPC, and custom SLAs.</div>
+          <div class="price-amount">$299 <span>/ mo</span></div>
+          <ul class="pricing-features">
+            <li>Unlimited high-volume throughput</li>
+            <li>Dedicated isolated clusters</li>
+            <li>Custom SOC2 &amp; HIPAA compliance</li>
+            <li>Dedicated solutions architect</li>
+            <li>Yearly data warehouse archiving</li>
+          </ul>
+          <button class="btn btn-secondary" id="btn-plan-enterprise">Contact Enterprise</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Floating Live Tracking HUD -->
+  <aside class="tracker-hud" id="tracker-hud">
+    <div class="hud-toast" id="hudToast">Event Sent!</div>
+    <div class="hud-header">
+      <div class="hud-title">
+        <span class="hud-indicator"></span>
+        <span>Tracker Active</span>
+      </div>
+      <span style="font-size: 0.75rem; color: #9ca3af;">v1.0.0</span>
+    </div>
+
+    <div class="hud-body">
+      <div class="hud-row">
+        <span class="hud-label">Session ID:</span>
+        <span class="hud-value" id="hudSessionId">Detecting...</span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-label">Simulated URL:</span>
+        <span class="hud-value" id="hudCurrentUrl">/demo/index.html</span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-label">Events Sent:</span>
+        <span class="hud-value" id="hudEventCount" style="color: #10b981; font-weight: bold;">0</span>
+      </div>
+    </div>
+
+    <div class="hud-actions">
+      <button class="hud-btn" id="hudResetSession" title="Clears localStorage session and starts a new user session">🔄 New Session</button>
+      <button class="hud-btn" id="hudSimulatePage" title="Simulates user visiting another page in this session">📄 Next Page</button>
+      <a href="http://localhost:5173" target="_blank" class="hud-btn primary" style="grid-column: span 2;" id="hudOpenDashboard">
+        📊 Open Admin Dashboard →
+      </a>
+    </div>
+  </aside>
+
+  <!-- Load Tracking Script -->
+  <!-- Automatically tracks page_view on load and window clicks with coordinates -->
+  <script src="../tracker/tracker.js" data-api-endpoint="http://localhost:5000/api/events"></script>
+  <!-- Demo interactive HUD script -->
+  <script src="demo.js"></script>
+</body>
+</html>

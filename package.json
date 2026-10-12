@@ -1,0 +1,27 @@
+{
+  "name": "user-analytics-session-tracker",
+  "version": "1.0.0",
+  "description": "Production-grade, modular User Analytics & Session Tracking Application",
+  "scripts": {
+    "start": "npm run start --prefix server",
+    "server": "npm run start --prefix server",
+    "server:dev": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "seed": "npm run seed --prefix server",
+    "test": "npm run test --prefix server",
+    "build:client": "npm run build --prefix client"
+  },
+  "keywords": [
+    "analytics",
+    "session-tracking",
+    "heatmap",
+    "user-journey",
+    "express",
+    "mongodb",
+    "react",
+    "vite",
+    "tailwind"
+  ],
+  "author": "Antigravity Pair Programmer",
+  "license": "MIT"
+}

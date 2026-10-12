@@ -1,0 +1,30 @@
+{
+  "name": "user-analytics-server",
+  "version": "1.0.0",
+  "description": "Backend API for User Analytics & Session Tracking Application",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/utils/seedData.js",
+    "test": "node --test tests/api.test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongodb-memory-server": "^9.2.0",
+    "mongoose": "^8.3.2",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "supertest": "^6.3.4"
+  },
+  "keywords": [
+    "analytics",
+    "express",
+    "mongoose",
+    "tracker"
+  ],
+  "license": "MIT"
+}
