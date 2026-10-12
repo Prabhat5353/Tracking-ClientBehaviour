@@ -103,10 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
       .map((p) => {
         const isWishlisted = wishlist.has(p.id);
         return `
-        <div class="product-card" id="card-${p.id}" data-id="${p.id}">
-          <div class="product-thumbnail-area" onclick="openQuickView('${p.id}')">
+        <div class="product-card" id="card-${p.id}" data-id="${p.id}" data-product-id="${p.id}" data-product-name="${p.name}">
+          <div class="product-thumbnail-area" onclick="openQuickView('${p.id}')" data-product-id="${p.id}" data-product-name="${p.name}" data-action="PRODUCT_CLICK">
             <span class="badge-tag ${p.badge === 'Best Seller' ? 'best-seller' : ''}">${p.badge}</span>
-            <button class="btn-wishlist ${isWishlisted ? 'active' : ''}" id="wishlist-${p.id}" onclick="event.stopPropagation(); toggleWishlist('${p.id}')" title="Save to wishlist">
+            <button class="btn-wishlist ${isWishlisted ? 'active' : ''}" id="wishlist-${p.id}" onclick="event.stopPropagation(); toggleWishlist('${p.id}')" title="Save to wishlist" data-action="WISHLIST_TOGGLE">
               ${isWishlisted ? '❤️' : '🤍'}
             </button>
             <div class="product-thumbnail-icon">${p.icon}</div>
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <div class="product-details">
             <div class="product-category-meta">${p.categoryLabel}</div>
-            <h3 class="product-title" onclick="openQuickView('${p.id}')">${p.name}</h3>
+            <h3 class="product-title" onclick="openQuickView('${p.id}')" data-product-id="${p.id}" data-product-name="${p.name}" data-action="PRODUCT_CLICK">${p.name}</h3>
             
             <div class="product-rating">
               <span class="rating-stars">★★★★★</span>
@@ -129,11 +129,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div class="product-actions">
-              <button class="btn-add-cart" id="btn-add-${p.id}" onclick="handleAddToCart('${p.id}')">
+              <button class="btn-add-cart" id="btn-add-${p.id}" onclick="handleAddToCart('${p.id}')" data-product-id="${p.id}" data-product-name="${p.name}" data-action="CART_ACTION">
                 <span>Add to Cart</span>
                 <span>→</span>
               </button>
-              <button class="btn-quick-view" id="btn-quick-${p.id}" onclick="openQuickView('${p.id}')" title="Quick view">
+              <button class="btn-quick-view" id="btn-quick-${p.id}" onclick="openQuickView('${p.id}')" title="Quick view" data-product-id="${p.id}" data-product-name="${p.name}" data-action="PRODUCT_CLICK">
                 Preview
               </button>
             </div>
@@ -184,6 +184,12 @@ document.addEventListener('DOMContentLoaded', () => {
       modalOriginalPrice.textContent = product.originalPrice ? `$${product.originalPrice}` : '';
     }
     if (modalDescription) modalDescription.textContent = product.description;
+
+    if (modalAddToCartBtn) {
+      modalAddToCartBtn.setAttribute('data-product-id', product.id);
+      modalAddToCartBtn.setAttribute('data-product-name', product.name);
+      modalAddToCartBtn.setAttribute('data-action', 'CART_ACTION');
+    }
 
     if (modalSwatches && product.colors) {
       modalSwatches.innerHTML = product.colors

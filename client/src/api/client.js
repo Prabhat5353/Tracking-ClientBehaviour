@@ -17,11 +17,27 @@ const apiClient = axios.create({
 
 export const api = {
   /**
-   * Fetch high-level KPI overview
+   * Fetch high-level KPI overview & timeline chart data
    */
-  async getStats() {
-    const res = await apiClient.get('/stats');
-    return res.data.stats;
+  async getOverview() {
+    const res = await apiClient.get('/analytics/overview');
+    return res.data;
+  },
+
+  /**
+   * Fetch product interactions ranking & engagement matrix
+   */
+  async getProductInteractions() {
+    const res = await apiClient.get('/analytics/product-interactions');
+    return res.data;
+  },
+
+  /**
+   * Fetch conversion funnel stages & drop-off metrics
+   */
+  async getFunnel() {
+    const res = await apiClient.get('/analytics/funnel');
+    return res.data;
   },
 
   /**
@@ -37,6 +53,14 @@ export const api = {
    */
   async getSessionJourney(sessionId) {
     const res = await apiClient.get(`/sessions/${encodeURIComponent(sessionId)}`);
+    return res.data;
+  },
+
+  /**
+   * Fetch deep-dive interaction audit report with action badges & page breakdown
+   */
+  async getSessionReport(sessionId) {
+    const res = await apiClient.get(`/sessions/${encodeURIComponent(sessionId)}/report`);
     return res.data;
   },
 
@@ -57,6 +81,22 @@ export const api = {
       params.url = pageUrl;
     }
     const res = await apiClient.get('/clicks', { params });
+    return res.data;
+  },
+
+  /**
+   * Legacy simple stats helper
+   */
+  async getStats() {
+    const res = await apiClient.get('/stats');
+    return res.data.stats;
+  },
+
+  /**
+   * Seed / simulate realistic enterprise shopping sessions
+   */
+  async seed() {
+    const res = await apiClient.post('/seed');
     return res.data;
   },
 

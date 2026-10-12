@@ -99,15 +99,15 @@
             </div>
 
             <div class="payment-methods-grid">
-              <div class="payment-card active" id="payMethodCard">
+              <div class="payment-card active" id="payMethodCard" data-action="PAYMENT_SELECT">
                 <div class="payment-card-icon">💳</div>
                 <div class="payment-card-name">Credit Card</div>
               </div>
-              <div class="payment-card" id="payMethodApple">
+              <div class="payment-card" id="payMethodApple" data-action="PAYMENT_SELECT">
                 <div class="payment-card-icon">🍎</div>
                 <div class="payment-card-name">Apple Pay</div>
               </div>
-              <div class="payment-card" id="payMethodPayPal">
+              <div class="payment-card" id="payMethodPayPal" data-action="PAYMENT_SELECT">
                 <div class="payment-card-icon">🅿️</div>
                 <div class="payment-card-name">PayPal</div>
               </div>
@@ -131,7 +131,7 @@
           </div>
 
           <!-- Primary Submit CTA -->
-          <button type="submit" class="btn-checkout" id="btnPlaceOrder" style="padding: 16px; font-size: 1.05rem;">
+          <button type="submit" class="btn-checkout" id="btnPlaceOrder" data-action="CHECKOUT_ACTION" style="padding: 16px; font-size: 1.05rem;">
             <span>Complete Order &amp; Pay</span>
             <span>🔒</span>
           </button>

@@ -70,6 +70,19 @@ function validateEvent(req, res, next) {
   req.body.pageUrl = pageUrl.trim();
   req.body.coordinates = eventType === 'click' ? coordinates : null;
 
+  // Normalize rich semantic metadata
+  const rawMeta = req.body.metadata || {};
+  const metadata = {
+    elementTag: rawMeta.elementTag || req.body.elementTag || req.body.element_tag || null,
+    elementId: rawMeta.elementId || req.body.elementId || req.body.element_id || null,
+    elementClass: rawMeta.elementClass || req.body.elementClass || req.body.element_class || null,
+    elementText: (rawMeta.elementText || req.body.elementText || req.body.element_text || '').substring(0, 150) || null,
+    productId: rawMeta.productId || req.body.productId || req.body.product_id || null,
+    productName: rawMeta.productName || req.body.productName || req.body.product_name || null,
+    actionType: rawMeta.actionType || req.body.actionType || req.body.action_type || (eventType === 'page_view' ? 'VIEW' : 'CLICK_CTA'),
+  };
+  req.body.metadata = metadata;
+
   // Validate timestamp if provided
   if (timestamp) {
     const parsedDate = new Date(timestamp);

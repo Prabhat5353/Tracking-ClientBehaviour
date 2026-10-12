@@ -33,10 +33,12 @@ app.use(express.urlencoded({ extended: true }));
 const trackerPath = path.resolve(__dirname, '../../tracker');
 const demoPath = path.resolve(__dirname, '../../demo');
 const storePath = path.resolve(__dirname, '../../store');
+const publicPath = path.resolve(__dirname, '../public');
 const clientDistPath = path.resolve(__dirname, '../../client/dist');
 const fs = require('fs');
 
 app.use('/tracker', express.static(trackerPath));
+app.use('/public', express.static(publicPath));
 app.use('/demo', express.static(demoPath));
 app.use('/store', express.static(storePath));
 if (fs.existsSync(clientDistPath)) {

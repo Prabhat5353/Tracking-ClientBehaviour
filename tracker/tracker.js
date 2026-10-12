@@ -1,12 +1,13 @@
 /**
- * Standalone Client-Side User Analytics & Session Tracker
+ * Enhanced Universal User Analytics & Session Tracker
  *
  * Requirements:
  * - Pure Vanilla JavaScript (zero external dependencies)
- * - Persistent session tracking via localStorage ('cf_session_id')
+ * - Persistent session tracking via localStorage & cookies ('cf_session_id')
  * - Automatic page_view capture on initialization
  * - Window-level click tracking (pageX, pageY, pageUrl, timestamp)
- * - Non-blocking asynchronous ingestion with silent failure handling
+ * - Auto-extraction of semantic attributes (data-product-id, data-product-name, data-action, elementText, selectors)
+ * - Resilient async ingestion + navigator.sendBeacon fallback on beforeunload / visibilitychange
  */
 (function (window, document) {
   'use strict';
@@ -134,11 +135,20 @@
 
   /**
    * Dispatches event payload asynchronously to backend.
-   * Fails silently on any network or execution error to never disrupt host site.
+   * Supports navigator.sendBeacon during page unload.
    */
-  function sendEventPayload(payload) {
+  function sendEventPayload(payload, useBeacon = false) {
     try {
-      // Use fetch with POST and application/json
+      const jsonBody = JSON.stringify(payload);
+
+      // 1. If beacon requested (e.g., page unload), use sendBeacon
+      if (useBeacon && typeof navigator.sendBeacon === 'function') {
+        const blob = new Blob([jsonBody], { type: 'application/json' });
+        const sent = navigator.sendBeacon(API_ENDPOINT, blob);
+        if (sent) return;
+      }
+
+      // 2. Use fetch with keepalive: true
       if (typeof window.fetch === 'function') {
         window
           .fetch(API_ENDPOINT, {
@@ -146,14 +156,13 @@
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(payload),
-            // 'no-cors' is NOT used here because server allows CORS and we send JSON body
+            body: jsonBody,
             mode: 'cors',
             credentials: 'omit',
-            keepalive: true, // Guarantees beacon completion during unload
+            keepalive: true,
           })
           .then((response) => {
-            // Optional internal dispatch for demo page UI HUD hooks
+            // Internal dispatch for UI HUD hooks
             if (typeof window.dispatchEvent === 'function') {
               window.dispatchEvent(
                 new CustomEvent('cf_tracker_event_sent', {
@@ -163,14 +172,13 @@
             }
           })
           .catch(() => {
-            // Silently swallow fetch network errors (offline, server down, etc.)
+            // Silently swallow fetch network errors
           });
       } else if (typeof window.XMLHttpRequest === 'function') {
-        // Fallback for ancient browsers
         const xhr = new XMLHttpRequest();
         xhr.open('POST', API_ENDPOINT, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.send(JSON.stringify(payload));
+        xhr.send(jsonBody);
       }
     } catch (err) {
       // Fail silently
@@ -193,13 +201,76 @@
       page_url: pageUrl,
       timestamp: new Date().toISOString(),
       coordinates: null,
+      metadata: {
+        actionType: 'VIEW',
+        elementText: document.title ? document.title.substring(0, 80) : null,
+      },
     };
 
     sendEventPayload(payload);
   }
 
   /**
-   * Records a user click event with document coordinates.
+   * Auto-extracts semantic target attributes from clicked elements
+   */
+  function extractSemanticMetadata(target) {
+    if (!target) return {};
+
+    try {
+      // Find closest interactive element or semantic container
+      const interactiveElem =
+        target.closest('[data-product-name], [data-product-id], [data-action], button, a, input, select') ||
+        target;
+
+      const productId =
+        interactiveElem.getAttribute('data-product-id') ||
+        target.getAttribute('data-product-id') ||
+        null;
+
+      const productName =
+        interactiveElem.getAttribute('data-product-name') ||
+        target.getAttribute('data-product-name') ||
+        null;
+
+      let actionType =
+        interactiveElem.getAttribute('data-action') ||
+        target.getAttribute('data-action') ||
+        null;
+
+      // Extract cleaned, truncated element text preview
+      let rawText = interactiveElem.innerText || interactiveElem.textContent || '';
+      rawText = rawText.replace(/\s+/g, ' ').trim();
+      const elementText = rawText ? rawText.substring(0, 80) : null;
+
+      // Classify action type if not explicitly tagged
+      if (!actionType) {
+        if (/add to (cart|bag)/i.test(rawText)) {
+          actionType = 'CART_ACTION';
+        } else if (/checkout|complete order|pay/i.test(rawText)) {
+          actionType = 'CHECKOUT_ACTION';
+        } else if (productId || productName) {
+          actionType = 'PRODUCT_CLICK';
+        } else {
+          actionType = 'CLICK_CTA';
+        }
+      }
+
+      return {
+        elementTag: (target.tagName || '').toUpperCase() || null,
+        elementId: target.id || interactiveElem.id || null,
+        elementClass: typeof target.className === 'string' ? target.className.trim() : null,
+        elementText,
+        productId,
+        productName,
+        actionType,
+      };
+    } catch (e) {
+      return {};
+    }
+  }
+
+  /**
+   * Records a user click event with document coordinates and rich semantic context.
    */
   function trackClick(e) {
     try {
@@ -215,6 +286,7 @@
 
       const sessionId = getOrCreateSessionId();
       const pageUrl = getCurrentPageUrl();
+      const metadata = extractSemanticMetadata(e.target);
 
       const payload = {
         sessionId,
@@ -230,6 +302,7 @@
         },
         x: Math.round(x),
         y: Math.round(y),
+        metadata,
       };
 
       sendEventPayload(payload);
@@ -244,19 +317,47 @@
   // 2. Attach click event listener to window in capture phase
   window.addEventListener('click', trackClick, true);
 
-  // Expose public API for host site debugging, custom reset, or testing
+  // 3. Track visibility change / page exit using navigator.sendBeacon
+  let hasSentExitBeacon = false;
+  function handlePageExit() {
+    if (hasSentExitBeacon) return;
+    hasSentExitBeacon = true;
+    const sessionId = getOrCreateSessionId();
+    const payload = {
+      sessionId,
+      eventType: 'page_view',
+      pageUrl: getCurrentPageUrl(),
+      timestamp: new Date().toISOString(),
+      coordinates: null,
+      metadata: {
+        actionType: 'NAVIGATE',
+        elementText: 'Page Exit / Visibility Change',
+      },
+    };
+    sendEventPayload(payload, true);
+  }
+
+  window.addEventListener('beforeunload', handlePageExit);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      handlePageExit();
+    }
+  });
+
+  // Expose public API
   window.UserTracker = {
-    version: '1.0.0',
+    version: '2.0.0',
     endpoint: API_ENDPOINT,
     getSessionId: getOrCreateSessionId,
     trackPageView,
-    trackCustomClick: function (x, y, url) {
+    trackCustomClick: function (x, y, url, meta) {
       const payload = {
         sessionId: getOrCreateSessionId(),
         eventType: 'click',
         pageUrl: url || getCurrentPageUrl(),
         timestamp: new Date().toISOString(),
         coordinates: { x: Math.round(x), y: Math.round(y) },
+        metadata: meta || null,
       };
       sendEventPayload(payload);
     },
@@ -264,6 +365,7 @@
       try {
         const newSessionId = generateSessionId();
         window.localStorage.setItem(SESSION_STORAGE_KEY, newSessionId);
+        setCookie(SESSION_STORAGE_KEY, newSessionId);
         return newSessionId;
       } catch (e) {
         return generateSessionId();

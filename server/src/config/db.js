@@ -8,6 +8,10 @@ let mongoMemoryServer = null;
  */
 async function connectDB() {
   try {
+    if (mongoose.connection.readyState === 1) {
+      return mongoose.connection;
+    }
+
     let mongoUri = process.env.MONGODB_URI;
 
     if (!mongoUri) {

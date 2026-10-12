@@ -4,139 +4,345 @@ const mongoose = require('mongoose');
 const { connectDB, disconnectDB } = require('../config/db');
 const Event = require('../models/Event');
 
-const PAGES = [
-  '/store/index.html',
-  '/store/checkout.html',
-  '/demo/index.html',
-  '/demo/pricing.html',
+const PRODUCTS = [
+  { id: 'lumina-apex-headphones', name: 'Apex Wireless Studio Headphones', price: 349 },
+  { id: 'craft-tactile-keyboard', name: 'Craft Precision Mechanical Keyboard', price: 219 },
+  { id: 'chrono-titanium-watch', name: 'Aura Chrono Titanium Watch', price: 429 },
+  { id: 'merino-studio-hoodie', name: 'Merino Wool Studio Overshirt', price: 165 },
+  { id: 'orbit-magnetic-dock', name: 'Orbit MagSpeed Charging Dock', price: 89 },
+  { id: 'puretone-iem-monitors', name: 'PureTone Reference In-Ear Monitors', price: 189 },
 ];
-
-// Click clusters simulating real user interactions on UI components
-const BUTTON_HOTSPOTS = {
-  '/store/index.html': [
-    { name: 'Hero CTA (Explore Collection)', baseX: 300, baseY: 310, spread: 25 },
-    { name: 'Hero CTA (Preview Apex ANC)', baseX: 470, baseY: 310, spread: 20 },
-    { name: 'Category Tab: Studio Audio', baseX: 430, baseY: 48, spread: 15 },
-    { name: 'Category Tab: Workstation', baseX: 530, baseY: 48, spread: 15 },
-    { name: 'Navbar Bag Trigger', baseX: 1180, baseY: 48, spread: 12 },
-    { name: 'Apex Headphones Add to Cart', baseX: 320, baseY: 670, spread: 20 },
-    { name: 'Tactile Keyboard Add to Cart', baseX: 640, baseY: 670, spread: 20 },
-    { name: 'Chrono Watch Add to Cart', baseX: 960, baseY: 670, spread: 20 },
-    { name: 'Cart Drawer Proceed to Checkout', baseX: 1080, baseY: 520, spread: 25 },
-  ],
-  '/store/checkout.html': [
-    { name: 'Email Input', baseX: 450, baseY: 220, spread: 20 },
-    { name: 'Address Input', baseX: 450, baseY: 420, spread: 20 },
-    { name: 'Credit Card Payment Method', baseX: 360, baseY: 560, spread: 15 },
-    { name: 'Apply Coupon Button', baseX: 1080, baseY: 380, spread: 15 },
-    { name: 'Complete Order Button', baseX: 520, baseY: 760, spread: 25 },
-  ],
-  '/demo/index.html': [
-    { name: 'Hero Primary CTA', baseX: 480, baseY: 310, spread: 25 },
-    { name: 'Hero Secondary CTA', baseX: 640, baseY: 310, spread: 20 },
-    { name: 'Navbar Pricing Link', baseX: 520, baseY: 42, spread: 15 },
-    { name: 'Feature Card 1', baseX: 320, baseY: 580, spread: 35 },
-  ],
-  '/demo/pricing.html': [
-    { name: 'Pro Plan Button (Popular)', baseX: 600, baseY: 430, spread: 30 },
-    { name: 'Starter Plan Button', baseX: 300, baseY: 440, spread: 25 },
-  ],
-};
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function generateHotspotClick(hotspot) {
-  const offsetX = (Math.random() - 0.5) * 2 * hotspot.spread;
-  const offsetY = (Math.random() - 0.5) * 2 * hotspot.spread;
+function generateCoords(baseX, baseY, spread = 20) {
   return {
-    x: Math.round(hotspot.baseX + offsetX),
-    y: Math.round(hotspot.baseY + offsetY),
+    x: Math.round(baseX + (Math.random() - 0.5) * spread * 2),
+    y: Math.round(baseY + (Math.random() - 0.5) * spread * 2),
   };
 }
 
 async function seedData() {
   try {
-    console.log('🌱 Starting Analytics Database Seeder...');
+    console.log('🌱 Starting Enterprise Analytics Database Seeder...');
     await connectDB();
 
-    // Clear existing events
     await Event.deleteMany({});
     console.log('🧹 Cleared existing event documents.');
 
     const now = Date.now();
-    const sessions = [
-      { id: 'sess_prod_exec_alpha81', minutesAgo: 85, journeyLength: 9 },
-      { id: 'sess_prod_shopper_99x1', minutesAgo: 50, journeyLength: 7 },
-      { id: 'sess_prod_evaluator_4b2', minutesAgo: 32, journeyLength: 12 },
-      { id: 'sess_prod_visitor_12f9', minutesAgo: 18, journeyLength: 5 },
-      { id: 'sess_prod_buyer_770a', minutesAgo: 8, journeyLength: 15 },
-      { id: 'sess_prod_current_active', minutesAgo: 2, journeyLength: 6 },
-    ];
-
     const eventsToInsert = [];
 
-    for (const session of sessions) {
-      let currentTime = now - session.minutesAgo * 60 * 1000;
-      let currentPage = PAGES[0]; // Start at home
+    // Define archetypes for realistic user behavioral data
+    const userArchetypes = [
+      // 1. High-intent Buyer (Full funnel journey)
+      {
+        id: 'sess_prod_buyer_99a1',
+        minutesAgo: 65,
+        type: 'full_buyer',
+        product: PRODUCTS[0],
+      },
+      // 2. High-intent Buyer 2
+      {
+        id: 'sess_prod_buyer_770c',
+        minutesAgo: 45,
+        type: 'full_buyer',
+        product: PRODUCTS[1],
+      },
+      // 3. Cart abandoner (View -> Product -> Add to Cart -> Drop off)
+      {
+        id: 'sess_prod_abandon_44b2',
+        minutesAgo: 50,
+        type: 'cart_abandon',
+        product: PRODUCTS[2],
+      },
+      // 4. Cart abandoner 2
+      {
+        id: 'sess_prod_abandon_11d8',
+        minutesAgo: 38,
+        type: 'cart_abandon',
+        product: PRODUCTS[0],
+      },
+      // 5. Product Explorer (Browsed multiple products, clicked quick-views)
+      {
+        id: 'sess_prod_explorer_32e5',
+        minutesAgo: 30,
+        type: 'product_explorer',
+        product: PRODUCTS[3],
+      },
+      // 6. Product Explorer 2
+      {
+        id: 'sess_prod_explorer_88f1',
+        minutesAgo: 22,
+        type: 'product_explorer',
+        product: PRODUCTS[4],
+      },
+      // 7. Casual browser (Home page views & category filters)
+      {
+        id: 'sess_prod_browser_60d3',
+        minutesAgo: 15,
+        type: 'casual_browser',
+      },
+      // 8. Bouncer 1 (Bounced immediately after landing)
+      {
+        id: 'sess_prod_bounce_10a9',
+        minutesAgo: 12,
+        type: 'bounce',
+      },
+      // 9. Bouncer 2
+      {
+        id: 'sess_prod_bounce_55c4',
+        minutesAgo: 8,
+        type: 'bounce',
+      },
+      // 10. Active Live Shopper (Recent session still shopping)
+      {
+        id: 'sess_prod_active_live01',
+        minutesAgo: 3,
+        type: 'active_shopper',
+        product: PRODUCTS[0],
+      },
+    ];
 
-      // First event is page_view
+    for (const user of userArchetypes) {
+      let t = now - user.minutesAgo * 60 * 1000;
+
+      if (user.type === 'bounce') {
+        // Only 1 page view event
+        eventsToInsert.push({
+          sessionId: user.id,
+          eventType: 'page_view',
+          pageUrl: '/store/index.html',
+          timestamp: new Date(t),
+          coordinates: null,
+          metadata: {
+            elementTag: 'body',
+            elementText: 'LUMINA — Architectural Design & Studio Hardware',
+            actionType: 'VIEW',
+          },
+        });
+        continue;
+      }
+
+      // Initial Page View
       eventsToInsert.push({
-        sessionId: session.id,
+        sessionId: user.id,
         eventType: 'page_view',
-        pageUrl: currentPage,
-        timestamp: new Date(currentTime),
+        pageUrl: '/store/index.html',
+        timestamp: new Date(t),
         coordinates: null,
+        metadata: {
+          elementTag: 'body',
+          elementText: 'LUMINA — Architectural Design & Studio Hardware',
+          actionType: 'VIEW',
+        },
       });
 
-      for (let step = 1; step < session.journeyLength; step++) {
-        // Step time forward 3 to 25 seconds
-        currentTime += getRandomInt(3000, 25000);
+      if (user.type === 'casual_browser') {
+        t += getRandomInt(4000, 9000);
+        eventsToInsert.push({
+          sessionId: user.id,
+          eventType: 'click',
+          pageUrl: '/store/index.html',
+          timestamp: new Date(t),
+          coordinates: generateCoords(430, 48),
+          metadata: {
+            elementTag: 'button',
+            elementId: 'tabAudio',
+            elementClass: 'cat-tab',
+            elementText: 'Studio Audio',
+            actionType: 'FILTER',
+          },
+        });
 
-        // 75% chance of click on current page, 25% chance of navigating to new page
-        const isPageSwitch = Math.random() < 0.25;
+        t += getRandomInt(6000, 12000);
+        eventsToInsert.push({
+          sessionId: user.id,
+          eventType: 'click',
+          pageUrl: '/store/index.html',
+          timestamp: new Date(t),
+          coordinates: generateCoords(300, 310),
+          metadata: {
+            elementTag: 'button',
+            elementId: 'btnHeroShopNow',
+            elementClass: 'btn-add-cart',
+            elementText: 'Explore Collection →',
+            actionType: 'NAVIGATE',
+          },
+        });
+        continue;
+      }
 
-        if (isPageSwitch) {
-          const nextPages = PAGES.filter((p) => p !== currentPage);
-          currentPage = nextPages[getRandomInt(0, nextPages.length - 1)];
+      // Product Explorer / Cart Abandon / Full Buyer
+      t += getRandomInt(3000, 7000);
+      eventsToInsert.push({
+        sessionId: user.id,
+        eventType: 'click',
+        pageUrl: '/store/index.html',
+        timestamp: new Date(t),
+        coordinates: generateCoords(320, 670),
+        metadata: {
+          elementTag: 'button',
+          elementId: `btnQuickView_${user.product.id}`,
+          elementClass: 'btn-quick-view',
+          elementText: 'Quick View',
+          productId: user.product.id,
+          productName: user.product.name,
+          actionType: 'PRODUCT_CLICK',
+        },
+      });
 
-          eventsToInsert.push({
-            sessionId: session.id,
-            eventType: 'page_view',
-            pageUrl: currentPage,
-            timestamp: new Date(currentTime),
-            coordinates: null,
-          });
-        } else {
-          // Generate a click
-          const hotspots = BUTTON_HOTSPOTS[currentPage] || BUTTON_HOTSPOTS['/demo/index.html'];
-          const chosenHotspot = hotspots[getRandomInt(0, hotspots.length - 1)];
-          const coords = generateHotspotClick(chosenHotspot);
+      if (user.type === 'product_explorer') {
+        t += getRandomInt(4000, 9000);
+        const secProd = PRODUCTS[5];
+        eventsToInsert.push({
+          sessionId: user.id,
+          eventType: 'click',
+          pageUrl: '/store/index.html',
+          timestamp: new Date(t),
+          coordinates: generateCoords(640, 670),
+          metadata: {
+            elementTag: 'button',
+            elementId: `btnQuickView_${secProd.id}`,
+            elementClass: 'btn-quick-view',
+            elementText: 'Quick View',
+            productId: secProd.id,
+            productName: secProd.name,
+            actionType: 'PRODUCT_CLICK',
+          },
+        });
+        continue;
+      }
 
-          eventsToInsert.push({
-            sessionId: session.id,
-            eventType: 'click',
-            pageUrl: currentPage,
-            timestamp: new Date(currentTime),
-            coordinates: coords,
-          });
-        }
+      // Add to Cart
+      t += getRandomInt(4000, 8000);
+      eventsToInsert.push({
+        sessionId: user.id,
+        eventType: 'click',
+        pageUrl: '/store/index.html',
+        timestamp: new Date(t),
+        coordinates: generateCoords(320, 710),
+        metadata: {
+          elementTag: 'button',
+          elementId: `btnAddCart_${user.product.id}`,
+          elementClass: 'btn-add-cart',
+          elementText: 'Add to Cart',
+          productId: user.product.id,
+          productName: user.product.name,
+          actionType: 'CART_ACTION',
+        },
+      });
+
+      if (user.type === 'cart_abandon') {
+        t += getRandomInt(5000, 10000);
+        eventsToInsert.push({
+          sessionId: user.id,
+          eventType: 'click',
+          pageUrl: '/store/index.html',
+          timestamp: new Date(t),
+          coordinates: generateCoords(1180, 48),
+          metadata: {
+            elementTag: 'button',
+            elementId: 'btnCartToggle',
+            elementClass: 'icon-btn',
+            elementText: 'Shopping Bag',
+            actionType: 'CART_ACTION',
+          },
+        });
+        continue;
+      }
+
+      // Proceed to Checkout
+      t += getRandomInt(3000, 7000);
+      eventsToInsert.push({
+        sessionId: user.id,
+        eventType: 'click',
+        pageUrl: '/store/index.html',
+        timestamp: new Date(t),
+        coordinates: generateCoords(1080, 520),
+        metadata: {
+          elementTag: 'a',
+          elementId: 'btnProceedCheckout',
+          elementClass: 'btn-checkout',
+          elementText: 'Proceed to Checkout →',
+          actionType: 'CHECKOUT_ACTION',
+        },
+      });
+
+      // Checkout Page View
+      t += getRandomInt(2000, 4000);
+      eventsToInsert.push({
+        sessionId: user.id,
+        eventType: 'page_view',
+        pageUrl: '/store/checkout.html',
+        timestamp: new Date(t),
+        coordinates: null,
+        metadata: {
+          elementTag: 'body',
+          elementText: 'LUMINA — Secure Express Checkout',
+          actionType: 'VIEW',
+        },
+      });
+
+      // Payment Selection
+      t += getRandomInt(5000, 9000);
+      eventsToInsert.push({
+        sessionId: user.id,
+        eventType: 'click',
+        pageUrl: '/store/checkout.html',
+        timestamp: new Date(t),
+        coordinates: generateCoords(360, 560),
+        metadata: {
+          elementTag: 'div',
+          elementId: 'payMethodCard',
+          elementClass: 'payment-card active',
+          elementText: 'Credit Card',
+          actionType: 'PAYMENT_SELECT',
+        },
+      });
+
+      if (user.type === 'full_buyer') {
+        // Complete Order
+        t += getRandomInt(8000, 16000);
+        eventsToInsert.push({
+          sessionId: user.id,
+          eventType: 'click',
+          pageUrl: '/store/checkout.html',
+          timestamp: new Date(t),
+          coordinates: generateCoords(520, 760),
+          metadata: {
+            elementTag: 'button',
+            elementId: 'btnPlaceOrder',
+            elementClass: 'btn-checkout',
+            elementText: 'Complete Order & Pay 🔒',
+            productId: user.product.id,
+            productName: user.product.name,
+            actionType: 'CHECKOUT_ACTION',
+          },
+        });
       }
     }
 
     const inserted = await Event.insertMany(eventsToInsert);
-    console.log(`✅ Successfully seeded ${inserted.length} analytics events across ${sessions.length} sessions!`);
+    console.log(`✅ Successfully seeded ${inserted.length} analytics events across ${userArchetypes.length} sessions!`);
 
-    await disconnectDB();
-    console.log('🎉 Seeder completed successfully.');
+    if (require.main === module) {
+      await disconnectDB();
+      console.log('🎉 Enterprise seeder completed successfully.');
+    }
+
+    return inserted.length;
   } catch (error) {
     console.error('❌ Seeder Failed:', error);
-    process.exit(1);
+    if (require.main === module) {
+      process.exit(1);
+    }
+    throw error;
   }
 }
 
-// Auto-run if executed directly
 if (require.main === module) {
   seedData();
 }

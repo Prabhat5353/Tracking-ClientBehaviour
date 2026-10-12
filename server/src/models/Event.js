@@ -14,6 +14,19 @@ const coordinatesSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const metadataSchema = new mongoose.Schema(
+  {
+    elementTag: { type: String, default: null, trim: true },
+    elementId: { type: String, default: null, trim: true },
+    elementClass: { type: String, default: null, trim: true },
+    elementText: { type: String, default: null, trim: true },
+    productId: { type: String, default: null, trim: true },
+    productName: { type: String, default: null, trim: true },
+    actionType: { type: String, default: null, trim: true },
+  },
+  { _id: false }
+);
+
 const eventSchema = new mongoose.Schema(
   {
     sessionId: {
@@ -46,6 +59,10 @@ const eventSchema = new mongoose.Schema(
       type: coordinatesSchema,
       default: null,
     },
+    metadata: {
+      type: metadataSchema,
+      default: null,
+    },
   },
   {
     timestamps: false,
@@ -58,6 +75,10 @@ eventSchema.index({ sessionId: 1, timestamp: 1 });
 
 // Compound index for URL click heatmap queries
 eventSchema.index({ pageUrl: 1, eventType: 1, timestamp: -1 });
+
+// Index for product interaction analytics
+eventSchema.index({ 'metadata.productName': 1, eventType: 1 });
+eventSchema.index({ timestamp: -1 });
 
 const Event = mongoose.model('Event', eventSchema);
 

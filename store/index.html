@@ -79,10 +79,10 @@
             Engineered for creative velocity. Precision-crafted titanium ANC acoustics, CNC-milled tactile workstations, and ethically sourced Merino wool.
           </p>
           <div class="hero-actions">
-            <button class="btn-add-cart" style="padding: 14px 28px; font-size: 0.95rem;" id="btnHeroShopNow" onclick="document.getElementById('productsSection').scrollIntoView({behavior: 'smooth'})">
+            <button class="btn-add-cart" style="padding: 14px 28px; font-size: 0.95rem;" id="btnHeroShopNow" data-action="NAVIGATE" onclick="document.getElementById('productsSection').scrollIntoView({behavior: 'smooth'})">
               Explore Collection →
             </button>
-            <button class="btn-quick-view" style="padding: 14px 22px; font-size: 0.95rem;" id="btnHeroLearnMore" onclick="openQuickView('lumina-apex-headphones')">
+            <button class="btn-quick-view" style="padding: 14px 22px; font-size: 0.95rem;" id="btnHeroLearnMore" data-action="PRODUCT_CLICK" data-product-id="lumina-apex-headphones" data-product-name="Apex Wireless Studio Headphones" onclick="openQuickView('lumina-apex-headphones')">
               Preview Apex ANC
             </button>
           </div>
@@ -123,11 +123,11 @@
       <!-- Toolbar: Categories & Sorting -->
       <div class="store-toolbar">
         <div class="category-tabs">
-          <button class="cat-tab active" data-cat="all" id="tabAll">All Items (8)</button>
-          <button class="cat-tab" data-cat="audio" id="tabAudio">Studio Audio</button>
-          <button class="cat-tab" data-cat="workstation" id="tabWorkstation">Workstation</button>
-          <button class="cat-tab" data-cat="wearables" id="tabWearables">Wearables</button>
-          <button class="cat-tab" data-cat="apparel" id="tabApparel">Apparel</button>
+          <button class="cat-tab active" data-cat="all" id="tabAll" data-action="FILTER">All Items (8)</button>
+          <button class="cat-tab" data-cat="audio" id="tabAudio" data-action="FILTER">Studio Audio</button>
+          <button class="cat-tab" data-cat="workstation" id="tabWorkstation" data-action="FILTER">Workstation</button>
+          <button class="cat-tab" data-cat="wearables" id="tabWearables" data-action="FILTER">Wearables</button>
+          <button class="cat-tab" data-cat="apparel" id="tabApparel" data-action="FILTER">Apparel</button>
         </div>
 
         <div class="sort-group">
@@ -156,7 +156,7 @@
           <span>Your Bag</span>
           <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(Tax &amp; duties calculated)</span>
         </div>
-        <button class="cart-close-btn" id="btnCartClose" title="Close Bag">✕</button>
+        <button class="cart-close-btn" id="btnCartClose" title="Close Bag" data-action="CART_ACTION">✕</button>
       </div>
 
       <!-- Scrollable List of Cart Items -->
@@ -172,7 +172,7 @@
         <!-- Promo Code Input -->
         <div class="coupon-row">
           <input type="text" class="coupon-input" id="couponInput" placeholder="Promo code (e.g. CAUSAL10)">
-          <button class="btn-apply-coupon" id="btnApplyCoupon">Apply</button>
+          <button class="btn-apply-coupon" id="btnApplyCoupon" data-action="COUPON_APPLY">Apply</button>
         </div>
 
         <!-- Financial Breakdown -->
@@ -198,10 +198,11 @@
         </div>
 
         <!-- Primary CTA to Checkout -->
-        <a href="checkout.html" class="btn-checkout" id="btnProceedCheckout">
+        <a href="checkout.html" class="btn-checkout" id="btnProceedCheckout" data-action="CHECKOUT_ACTION">
           <span>Proceed to Checkout</span>
           <span>→</span>
         </a>
+      </div>
       </div>
     </aside>
   </div>

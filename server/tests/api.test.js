@@ -141,4 +141,72 @@ describe('User Analytics API Endpoints', () => {
     assert.strictEqual(res.body.stats.totalClicks, 1);
     assert.strictEqual(res.body.stats.totalPageViews, 1);
   });
+
+  test('POST /api/events persists rich element and product metadata', async () => {
+    const payload = {
+      sessionId: 'test_sess_rich',
+      eventType: 'click',
+      pageUrl: '/store/index.html',
+      coordinates: { x: 420, y: 780 },
+      metadata: {
+        elementTag: 'button',
+        elementId: 'btnAddCart_lumina-apex-headphones',
+        elementClass: 'btn-add-cart',
+        elementText: 'Add to Cart',
+        productId: 'lumina-apex-headphones',
+        productName: 'Apex Wireless Studio Headphones',
+        actionType: 'CART_ACTION',
+      },
+    };
+
+    const res = await request(app).post('/api/events').send(payload);
+    assert.strictEqual(res.status, 201);
+    assert.strictEqual(res.body.event.metadata.productName, 'Apex Wireless Studio Headphones');
+    assert.strictEqual(res.body.event.metadata.actionType, 'CART_ACTION');
+  });
+
+  test('GET /api/analytics/overview returns executive KPI aggregates & time-series', async () => {
+    const res = await request(app).get('/api/analytics/overview');
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.success, true);
+    assert(res.body.kpis);
+    assert(typeof res.body.kpis.totalSessions === 'number');
+    assert(typeof res.body.kpis.totalClicks === 'number');
+    assert(typeof res.body.kpis.bounceRatePercent === 'number');
+    assert(Array.isArray(res.body.timeline));
+  });
+
+  test('GET /api/analytics/product-interactions ranks products with unique users and rates', async () => {
+    const res = await request(app).get('/api/analytics/product-interactions');
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.success, true);
+    assert(Array.isArray(res.body.items));
+    const prod = res.body.items.find((p) => p.name === 'Apex Wireless Studio Headphones');
+    assert(prod, 'Apex Headphones should appear in product interactions');
+    assert(prod.totalClicks >= 1);
+    assert(prod.uniqueUsers >= 1);
+  });
+
+  test('GET /api/analytics/funnel returns sequential stage drop-off analysis', async () => {
+    const res = await request(app).get('/api/analytics/funnel');
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.success, true);
+    assert(Array.isArray(res.body.steps));
+    assert.strictEqual(res.body.steps.length, 4);
+    assert.strictEqual(res.body.steps[0].name, 'Store Visit');
+    assert.strictEqual(res.body.steps[1].name, 'Product Engagement');
+    assert.strictEqual(res.body.steps[2].name, 'Add to Cart');
+    assert.strictEqual(res.body.steps[3].name, 'Checkout & Order');
+  });
+
+  test('GET /api/sessions/:sessionId/report returns detailed audit trail with action badges', async () => {
+    const res = await request(app).get('/api/sessions/test_sess_rich/report');
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.success, true);
+    assert.strictEqual(res.body.sessionId, 'test_sess_rich');
+    assert(Array.isArray(res.body.timeline));
+    assert.strictEqual(res.body.timeline[0].actionBadge, 'CART_ACTION');
+    assert(Array.isArray(res.body.pagesTimeBreakdown));
+  });
 });
+
