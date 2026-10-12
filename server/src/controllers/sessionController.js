@@ -7,7 +7,24 @@ const Event = require('../models/Event');
  */
 async function getAllSessions(req, res, next) {
   try {
+    const site = req.query.siteId || req.query.site;
+    const domain = req.query.domain;
+    let matchStage = [];
+
+    if (site && site !== 'ALL') {
+      matchStage = [
+        {
+          $match: {
+            $or: [{ 'metadata.siteId': site }, { 'metadata.domain': site }],
+          },
+        },
+      ];
+    } else if (domain && domain !== 'ALL') {
+      matchStage = [{ $match: { 'metadata.domain': domain } }];
+    }
+
     const sessions = await Event.aggregate([
+      ...matchStage,
       { $sort: { timestamp: 1 } },
       {
         $group: {
@@ -23,6 +40,8 @@ async function getAllSessions(req, res, next) {
             $sum: { $cond: [{ $eq: ['$eventType', 'click'] }, 1, 0] },
           },
           pagesVisited: { $addToSet: '$pageUrl' },
+          domain: { $first: '$metadata.domain' },
+          siteId: { $first: '$metadata.siteId' },
         },
       },
       {
@@ -35,6 +54,8 @@ async function getAllSessions(req, res, next) {
           initialPage: 1,
           pageViews: 1,
           clicks: 1,
+          domain: 1,
+          siteId: 1,
           uniquePagesCount: { $size: '$pagesVisited' },
           pagesVisited: 1,
           durationMs: { $subtract: ['$lastActive', '$firstSeen'] },

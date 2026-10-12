@@ -17,34 +17,50 @@ const apiClient = axios.create({
 
 export const api = {
   /**
-   * Fetch high-level KPI overview & timeline chart data
+   * Fetch distinct connected domains & sites tracked
    */
-  async getOverview() {
-    const res = await apiClient.get('/analytics/overview');
+  async getDomains() {
+    const res = await apiClient.get('/analytics/domains');
     return res.data;
   },
 
   /**
-   * Fetch product interactions ranking & engagement matrix
+   * Fetch high-level KPI overview & timeline chart data (supports site filter)
    */
-  async getProductInteractions() {
-    const res = await apiClient.get('/analytics/product-interactions');
+  async getOverview(siteId = 'ALL') {
+    const params = {};
+    if (siteId && siteId !== 'ALL') params.siteId = siteId;
+    const res = await apiClient.get('/analytics/overview', { params });
     return res.data;
   },
 
   /**
-   * Fetch conversion funnel stages & drop-off metrics
+   * Fetch product interactions ranking & engagement matrix (supports site filter)
    */
-  async getFunnel() {
-    const res = await apiClient.get('/analytics/funnel');
+  async getProductInteractions(siteId = 'ALL') {
+    const params = {};
+    if (siteId && siteId !== 'ALL') params.siteId = siteId;
+    const res = await apiClient.get('/analytics/product-interactions', { params });
     return res.data;
   },
 
   /**
-   * Fetch all unique sessions with aggregate metrics
+   * Fetch conversion funnel stages & drop-off metrics (supports site filter)
    */
-  async getSessions() {
-    const res = await apiClient.get('/sessions');
+  async getFunnel(siteId = 'ALL') {
+    const params = {};
+    if (siteId && siteId !== 'ALL') params.siteId = siteId;
+    const res = await apiClient.get('/analytics/funnel', { params });
+    return res.data;
+  },
+
+  /**
+   * Fetch all unique sessions with aggregate metrics (supports site filter)
+   */
+  async getSessions(siteId = 'ALL') {
+    const params = {};
+    if (siteId && siteId !== 'ALL') params.siteId = siteId;
+    const res = await apiClient.get('/sessions', { params });
     return res.data.sessions || [];
   },
 
@@ -65,31 +81,28 @@ export const api = {
   },
 
   /**
-   * Fetch distinct tracked pages list
+   * Fetch distinct tracked pages list (supports site filter)
    */
-  async getPages() {
-    const res = await apiClient.get('/pages');
+  async getPages(siteId = 'ALL') {
+    const params = {};
+    if (siteId && siteId !== 'ALL') params.siteId = siteId;
+    const res = await apiClient.get('/pages', { params });
     return res.data;
   },
 
   /**
    * Fetch click coordinates for a given URL (or all URLs)
    */
-  async getClicks(pageUrl = '') {
+  async getClicks(pageUrl = '', siteId = 'ALL') {
     const params = {};
     if (pageUrl && pageUrl !== 'ALL') {
       params.url = pageUrl;
     }
+    if (siteId && siteId !== 'ALL') {
+      params.siteId = siteId;
+    }
     const res = await apiClient.get('/clicks', { params });
     return res.data;
-  },
-
-  /**
-   * Legacy simple stats helper
-   */
-  async getStats() {
-    const res = await apiClient.get('/stats');
-    return res.data.stats;
   },
 
   /**

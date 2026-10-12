@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NovaCloud AI — Autonomous Inference & Cloud GPU Mesh</title>
+  <meta name="description" content="Third-party enterprise client website embedding CausalFunnel universal session tracker.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Telemetry Integration Strip -->
+  <div class="tracker-status-strip">
+    <span>⚡ Embedded Third-Party Client: <strong>NovaCloud AI</strong> &bull; Tracking via CausalFunnel Universal Script (<code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">data-site-id="novacloud-ai"</code>)</span>
+    <a href="http://localhost:5173" target="_blank" style="color: #67e8f9; margin-left: 12px; font-weight: 700; text-decoration: none;">View in Admin Command Centre →</a>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container nav">
+      <a href="index.html" class="brand" id="brandLogo">
+        <div class="brand-icon">⚡</div>
+        <span>NovaCloud AI</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#features" class="nav-link" id="navFeatures" data-action="NAVIGATE">Vector Mesh</a>
+        <a href="#configurator" class="nav-link" id="navCompute" data-action="NAVIGATE">Compute Nodes</a>
+        <a href="#pricing" class="nav-link" id="navPricing" data-action="NAVIGATE">Pricing</a>
+        <a href="http://localhost:5000/store/index.html" target="_blank" class="nav-link" id="navStoreSwitch" style="color: #c084fc;">🛍️ Visit LUMINA Store</a>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button class="btn-secondary" id="btnHeaderContactSales" data-action="CLICK_CTA">Talk to Sales</button>
+        <button class="btn-primary" id="btnHeaderStartTrial" data-action="TRIAL_START">Deploy Cluster</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="badge-pill">
+        <span>✨ Next-Gen H100 SXM5 Clusters Available</span>
+      </div>
+      <h1>
+        Autonomous GPU Mesh for <br>
+        <span class="gradient-text">Ultra-Low Latency Inference</span>
+      </h1>
+      <p>
+        Deploy distributed vLLM pipelines with automated speculative decoding, zero cold-starts, and multi-cloud failover in under 60 seconds.
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn-primary" style="padding: 14px 32px; font-size: 1rem;" id="btnHeroDeployFree" data-action="TRIAL_START" data-product-name="NovaCloud Free Tier">
+          Start Free Sandbox Cluster →
+        </button>
+        <button class="btn-secondary" style="padding: 14px 28px; font-size: 1rem;" id="btnHeroScheduleDemo" data-action="DEMO_REQUEST">
+          Book Technical Walkthrough
+        </button>
+      </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="features-section" id="features">
+      <div class="grid-3">
+        <div class="feature-card" id="cardVectorRouting">
+          <div class="card-icon">🚀</div>
+          <h3>Sub-Millisecond Routing</h3>
+          <p>
+            Dynamically distribute tensor-parallel model weights across interconnected InfiniBand NDR nodes with intelligent token-aware load balancing.
+          </p>
+          <button class="card-btn" id="btnInspectRouting" data-action="FEATURE_CLICK" data-product-name="Vector Routing Engine">
+            Inspect Routing Topology &rarr;
+          </button>
+        </div>
+
+        <div class="feature-card" id="cardKVCache">
+          <div class="card-icon">🧠</div>
+          <h3>Tiered Paged KV-Cache</h3>
+          <p>
+            Offload prompt prefixes to NVMe-oF pools without throughput degradation. Achieve 8x context density on multi-turn agent sessions.
+          </p>
+          <button class="card-btn" id="btnInspectCache" data-action="FEATURE_CLICK" data-product-name="Paged KV Cache">
+            Benchmark Memory Savings &rarr;
+          </button>
+        </div>
+
+        <div class="feature-card" id="cardSecurity">
+          <div class="card-icon">🔒</div>
+          <h3>Confidential Compute</h3>
+          <p>
+            Hardware-isolated enclaves with memory encryption keys verified via remote attestation. Zero data retention by design.
+          </p>
+          <button class="card-btn" id="btnInspectSecurity" data-action="FEATURE_CLICK" data-product-name="Confidential Compute">
+            Download SOC-2 Type II Report &rarr;
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cluster Configurator -->
+    <section class="configurator-section" id="configurator">
+      <h2 style="font-size: 2rem; font-weight: 800; color: #fff;">Interactive Mesh Sizing</h2>
+      <p style="color: var(--text-muted); margin-top: 8px;">Select a compute configuration to provision instant endpoints.</p>
+
+      <div class="pricing-tabs">
+        <button class="price-tab active" id="tierStarter" data-action="TIER_SELECT" data-product-name="4x H100 Starter">4x H100 (Starter)</button>
+        <button class="price-tab" id="tierPro" data-action="TIER_SELECT" data-product-name="16x H100 Scale">16x H100 (Scale)</button>
+        <button class="price-tab" id="tierEnterprise" data-action="TIER_SELECT" data-product-name="64x H100 Mesh">64x H100 (Enterprise Mesh)</button>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.3); max-width: 600px; margin: 0 auto; padding: 24px; border-radius: 16px; border: 1px solid var(--border-subtle);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <span style="color: var(--text-muted);">Estimated Throughput:</span>
+          <span style="font-weight: 700; color: var(--accent-cyan);" id="displayThroughput">2,450 tokens/sec</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <span style="color: var(--text-muted);">Hourly Rate:</span>
+          <span style="font-size: 1.5rem; font-weight: 800; color: #fff;" id="displayPrice">$11.80 / hr</span>
+        </div>
+        <button class="btn-primary" style="width: 100%; padding: 14px;" id="btnProvisionNow" data-action="CHECKOUT_ACTION" data-product-name="Instant Compute Provisioning">
+          Provision Instant Cluster 🚀
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>NovaCloud AI &bull; Autonomous Cloud Mesh &bull; Monitored via CausalFunnel Enterprise Analytics</p>
+    </div>
+  </footer>
+
+  <!-- Notification Toast -->
+  <div id="toastNotification" style="position: fixed; bottom: 24px; right: 24px; background: #0f172a; border: 1px solid #38bdf8; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 0.85rem; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 999;">
+    ✅ Interaction recorded and sent to CausalFunnel Command Centre!
+  </div>
+
+  <!-- Interactive script logic for NovaCloud UI -->
+  <script>
+    const tabs = document.querySelectorAll('.price-tab');
+    const displayThroughput = document.getElementById('displayThroughput');
+    const displayPrice = document.getElementById('displayPrice');
+    const toast = document.getElementById('toastNotification');
+
+    function showToast(msg) {
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        if (tab.id === 'tierStarter') {
+          displayThroughput.innerText = '2,450 tokens/sec';
+          displayPrice.innerText = '$11.80 / hr';
+        } else if (tab.id === 'tierPro') {
+          displayThroughput.innerText = '9,800 tokens/sec';
+          displayPrice.innerText = '$46.50 / hr';
+        } else {
+          displayThroughput.innerText = '42,000 tokens/sec';
+          displayPrice.innerText = '$178.00 / hr';
+        }
+        showToast('Configured tier: ' + tab.innerText);
+      });
+    });
+
+    document.getElementById('btnProvisionNow')?.addEventListener('click', () => {
+      showToast('🚀 Provisioning cluster! Telemetry event dispatched.');
+    });
+
+    document.getElementById('btnHeroDeployFree')?.addEventListener('click', () => {
+      showToast('🎉 Free sandbox cluster requested! Signal captured.');
+    });
+  </script>
+
+  <!-- CausalFunnel Universal Tracking Script (Embedded on External Site) -->
+  <script src="/tracker/tracker.js" data-site-id="novacloud-ai" async></script>
+</body>
+</html>

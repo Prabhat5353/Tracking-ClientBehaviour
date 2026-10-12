@@ -23,6 +23,10 @@ const metadataSchema = new mongoose.Schema(
     productId: { type: String, default: null, trim: true },
     productName: { type: String, default: null, trim: true },
     actionType: { type: String, default: null, trim: true },
+    domain: { type: String, default: null, trim: true },
+    siteId: { type: String, default: null, trim: true },
+    referrer: { type: String, default: null, trim: true },
+    title: { type: String, default: null, trim: true },
   },
   { _id: false }
 );
@@ -78,6 +82,8 @@ eventSchema.index({ pageUrl: 1, eventType: 1, timestamp: -1 });
 
 // Index for product interaction analytics
 eventSchema.index({ 'metadata.productName': 1, eventType: 1 });
+eventSchema.index({ 'metadata.domain': 1, timestamp: -1 });
+eventSchema.index({ 'metadata.siteId': 1, timestamp: -1 });
 eventSchema.index({ timestamp: -1 });
 
 const Event = mongoose.model('Event', eventSchema);

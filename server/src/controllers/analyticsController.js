@@ -1,14 +1,86 @@
 const Event = require('../models/Event');
 
 /**
+ * Helper to construct domain / siteId filter from query parameters
+ */
+function buildSiteFilter(req) {
+  const filter = {};
+  const site = req.query.siteId || req.query.site;
+  const domain = req.query.domain;
+
+  if (site && site !== 'ALL') {
+    filter.$or = [
+      { 'metadata.siteId': site },
+      { 'metadata.domain': site },
+    ];
+  } else if (domain && domain !== 'ALL') {
+    filter['metadata.domain'] = domain;
+  }
+
+  return filter;
+}
+
+/**
+ * Discover and aggregate all external websites & domains embedding the tracker
+ * GET /api/analytics/domains
+ */
+async function getTrackedDomains(req, res, next) {
+  try {
+    const domainAgg = await Event.aggregate([
+      {
+        $group: {
+          _id: {
+            $ifNull: ['$metadata.siteId', { $ifNull: ['$metadata.domain', 'default-site'] }],
+          },
+          domain: { $first: '$metadata.domain' },
+          siteId: { $first: '$metadata.siteId' },
+          totalEvents: { $sum: 1 },
+          clicks: { $sum: { $cond: [{ $eq: ['$eventType', 'click'] }, 1, 0] } },
+          pageViews: { $sum: { $cond: [{ $eq: ['$eventType', 'page_view'] }, 1, 0] } },
+          sessions: { $addToSet: '$sessionId' },
+          lastSeen: { $max: '$timestamp' },
+          firstSeen: { $min: '$timestamp' },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: '$_id',
+          name: '$_id',
+          domain: { $ifNull: ['$domain', '$_id'] },
+          siteId: { $ifNull: ['$siteId', '$_id'] },
+          totalEvents: 1,
+          clicks: 1,
+          pageViews: 1,
+          uniqueSessions: { $size: '$sessions' },
+          lastSeen: 1,
+          firstSeen: 1,
+        },
+      },
+      { $sort: { totalEvents: -1 } },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      count: domainAgg.length,
+      domains: domainAgg,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * Fetch all click coordinates (x, y) for a specific URL for heatmap rendering.
- * GET /api/clicks?url=<pageUrl>
+ * GET /api/clicks?url=<pageUrl>&siteId=<siteId>&domain=<domain>
  */
 async function getClicks(req, res, next) {
   try {
     const { url } = req.query;
+    const siteFilter = buildSiteFilter(req);
 
     const query = {
+      ...siteFilter,
       eventType: 'click',
       coordinates: { $ne: null },
     };
@@ -38,6 +110,8 @@ async function getClicks(req, res, next) {
       sessionId: e.sessionId,
       elementText: e.metadata?.elementText || null,
       productName: e.metadata?.productName || null,
+      domain: e.metadata?.domain || null,
+      siteId: e.metadata?.siteId || null,
     }));
 
     return res.status(200).json({
@@ -53,14 +127,17 @@ async function getClicks(req, res, next) {
 
 /**
  * Fetch a distinct list of all tracked pageUrl paths for heatmap filtering.
- * GET /api/pages
+ * GET /api/pages?siteId=<siteId>&domain=<domain>
  */
 async function getTrackedPages(req, res, next) {
   try {
-    const pages = await Event.distinct('pageUrl');
+    const siteFilter = buildSiteFilter(req);
+    const pages = await Event.distinct('pageUrl', siteFilter);
 
-    // Also get click count and pageview count per page
+    const matchStage = Object.keys(siteFilter).length > 0 ? [{ $match: siteFilter }] : [];
+
     const pageStats = await Event.aggregate([
+      ...matchStage,
       {
         $group: {
           _id: '$pageUrl',
@@ -102,15 +179,17 @@ async function getTrackedPages(req, res, next) {
 
 /**
  * Fetch high-level analytics summary KPI cards
- * GET /api/stats
+ * GET /api/stats?siteId=<siteId>&domain=<domain>
  */
 async function getOverallStats(req, res, next) {
   try {
+    const siteFilter = buildSiteFilter(req);
+
     const [totalEvents, totalClicks, totalPageViews, distinctSessions] = await Promise.all([
-      Event.countDocuments(),
-      Event.countDocuments({ eventType: 'click' }),
-      Event.countDocuments({ eventType: 'page_view' }),
-      Event.distinct('sessionId'),
+      Event.countDocuments(siteFilter),
+      Event.countDocuments({ ...siteFilter, eventType: 'click' }),
+      Event.countDocuments({ ...siteFilter, eventType: 'page_view' }),
+      Event.distinct('sessionId', siteFilter),
     ]);
 
     const totalSessions = distinctSessions.length;
@@ -134,21 +213,25 @@ async function getOverallStats(req, res, next) {
 /**
  * Executive Command Center Overview:
  * Comprehensive KPIs + Time-Series Traffic Chart Data
- * GET /api/analytics/overview
+ * GET /api/analytics/overview?siteId=<siteId>&domain=<domain>
  */
 async function getAnalyticsOverview(req, res, next) {
   try {
+    const siteFilter = buildSiteFilter(req);
+
     const [totalEvents, totalClicks, totalPageViews, distinctSessions] = await Promise.all([
-      Event.countDocuments(),
-      Event.countDocuments({ eventType: 'click' }),
-      Event.countDocuments({ eventType: 'page_view' }),
-      Event.distinct('sessionId'),
+      Event.countDocuments(siteFilter),
+      Event.countDocuments({ ...siteFilter, eventType: 'click' }),
+      Event.countDocuments({ ...siteFilter, eventType: 'page_view' }),
+      Event.distinct('sessionId', siteFilter),
     ]);
 
     const totalSessions = distinctSessions.length;
+    const matchStage = Object.keys(siteFilter).length > 0 ? [{ $match: siteFilter }] : [];
 
     // Session duration and bounce rate calculation via aggregation
     const sessionAgg = await Event.aggregate([
+      ...matchStage,
       {
         $group: {
           _id: '$sessionId',
@@ -182,8 +265,9 @@ async function getAnalyticsOverview(req, res, next) {
     const bounceRatePercent =
       totalSessions > 0 ? Math.round((singleEventSessions / totalSessions) * 100) : 0;
 
-    // Time-series aggregation for traffic volume chart (hourly or 2-hour buckets)
+    // Time-series aggregation for traffic volume chart
     const rawTimeline = await Event.aggregate([
+      ...matchStage,
       {
         $group: {
           _id: {
@@ -201,7 +285,6 @@ async function getAnalyticsOverview(req, res, next) {
       { $sort: { _id: 1 } },
     ]);
 
-    // Ensure we have a smooth timeline (fallback with current hours if sparse)
     const timeline = rawTimeline.map((item) => ({
       timeLabel: item._id,
       pageViews: item.pageViews,
@@ -229,23 +312,25 @@ async function getAnalyticsOverview(req, res, next) {
 /**
  * Product & Interactive Element Behavior Matrix:
  * Aggregates interactions per product / CTA
- * GET /api/analytics/product-interactions
+ * GET /api/analytics/product-interactions?siteId=<siteId>&domain=<domain>
  */
 async function getProductInteractions(req, res, next) {
   try {
-    const totalSessions = (await Event.distinct('sessionId')).length || 1;
+    const siteFilter = buildSiteFilter(req);
+    const totalSessions = (await Event.distinct('sessionId', siteFilter)).length || 1;
+
+    const matchQuery = {
+      ...siteFilter,
+      eventType: 'click',
+      $or: [
+        { 'metadata.productName': { $ne: null } },
+        { 'metadata.elementText': { $ne: null } },
+        { 'metadata.elementId': { $ne: null } },
+      ],
+    };
 
     const interactions = await Event.aggregate([
-      {
-        $match: {
-          eventType: 'click',
-          $or: [
-            { 'metadata.productName': { $ne: null } },
-            { 'metadata.elementText': { $ne: null } },
-            { 'metadata.elementId': { $ne: null } },
-          ],
-        },
-      },
+      { $match: matchQuery },
       {
         $group: {
           _id: {
@@ -259,6 +344,8 @@ async function getProductInteractions(req, res, next) {
           lastClicked: { $max: '$timestamp' },
           productId: { $first: '$metadata.productId' },
           actionType: { $first: '$metadata.actionType' },
+          domain: { $first: '$metadata.domain' },
+          siteId: { $first: '$metadata.siteId' },
         },
       },
       {
@@ -270,10 +357,12 @@ async function getProductInteractions(req, res, next) {
           lastClicked: 1,
           productId: 1,
           actionType: 1,
+          domain: 1,
+          siteId: 1,
         },
       },
       { $sort: { totalClicks: -1 } },
-      { $limit: 20 },
+      { $limit: 25 },
     ]);
 
     // Compute interaction rate and engagement tier
@@ -307,50 +396,50 @@ async function getProductInteractions(req, res, next) {
  * Conversion Funnel Analytics:
  * Measures 4 key behavioral conversion stages:
  * 1. Store Visit -> 2. Product Interaction -> 3. Add to Cart -> 4. Checkout Intent
- * GET /api/analytics/funnel
+ * GET /api/analytics/funnel?siteId=<siteId>&domain=<domain>
  */
 async function getFunnelAnalytics(req, res, next) {
   try {
-    const allSessions = await Event.distinct('sessionId');
+    const siteFilter = buildSiteFilter(req);
+    const allSessions = await Event.distinct('sessionId', siteFilter);
     const totalSessionsCount = allSessions.length;
 
-    // Stage 1: Store Visit (sessions visiting store or demo)
+    // Stage 1: Store/Site Landing Visit
     const stage1Sessions = await Event.distinct('sessionId', {
+      ...siteFilter,
       eventType: 'page_view',
-      $or: [
-        { pageUrl: { $regex: '/store' } },
-        { pageUrl: { $regex: '/demo' } },
-        { pageUrl: '/' },
-      ],
     });
 
-    // Stage 2: Product Interaction (sessions clicking product cards or preview modals)
+    // Stage 2: Product / Content Interaction
     const stage2Sessions = await Event.distinct('sessionId', {
+      ...siteFilter,
       eventType: 'click',
       $or: [
         { 'metadata.productName': { $ne: null } },
         { 'metadata.productId': { $ne: null } },
-        { pageUrl: { $regex: 'product' } },
-        { 'metadata.actionType': 'PRODUCT_CLICK' },
+        { pageUrl: { $regex: 'product|demo|feature' } },
+        { 'metadata.actionType': { $in: ['PRODUCT_CLICK', 'FEATURE_CLICK'] } },
       ],
     });
 
-    // Stage 3: Add to Cart (sessions clicking Add to Cart / Add to Bag)
+    // Stage 3: High-Intent Action (Cart addition, trial start)
     const stage3Sessions = await Event.distinct('sessionId', {
+      ...siteFilter,
       eventType: 'click',
       $or: [
-        { 'metadata.actionType': 'CART_ACTION' },
-        { 'metadata.elementText': { $regex: /add to (cart|bag)/i } },
-        { 'metadata.elementId': { $regex: /add|cart/i } },
+        { 'metadata.actionType': { $in: ['CART_ACTION', 'TRIAL_START'] } },
+        { 'metadata.elementText': { $regex: /add to (cart|bag)|try free|get started/i } },
+        { 'metadata.elementId': { $regex: /add|cart|trial/i } },
       ],
     });
 
-    // Stage 4: Checkout Intent (sessions visiting checkout page or clicking Complete Order)
+    // Stage 4: Conversion / Checkout Intent
     const stage4Sessions = await Event.distinct('sessionId', {
+      ...siteFilter,
       $or: [
         { pageUrl: { $regex: 'checkout' } },
         { 'metadata.actionType': 'CHECKOUT_ACTION' },
-        { 'metadata.elementText': { $regex: /checkout|complete order|pay/i } },
+        { 'metadata.elementText': { $regex: /checkout|complete order|pay|subscribe/i } },
       ],
     });
 
@@ -363,7 +452,7 @@ async function getFunnelAnalytics(req, res, next) {
       {
         stepOrder: 1,
         name: 'Store Visit',
-        description: 'Landed on Store Catalog',
+        description: 'Visited website / catalog',
         sessionsCount: s1Count,
         conversionRatePercent: 100,
         dropoffRatePercent: 0,
@@ -371,7 +460,7 @@ async function getFunnelAnalytics(req, res, next) {
       {
         stepOrder: 2,
         name: 'Product Engagement',
-        description: 'Viewed Specs / Quick-View',
+        description: 'Engaged with products / CTAs',
         sessionsCount: s2Count,
         conversionRatePercent: Math.round((s2Count / s1Count) * 100),
         dropoffRatePercent: Math.round(((s1Count - s2Count) / s1Count) * 100),
@@ -379,7 +468,7 @@ async function getFunnelAnalytics(req, res, next) {
       {
         stepOrder: 3,
         name: 'Add to Cart',
-        description: 'Added item to Shopping Bag',
+        description: 'Added to Bag / High Intent',
         sessionsCount: s3Count,
         conversionRatePercent: Math.round((s3Count / s1Count) * 100),
         dropoffRatePercent: s2Count > 0 ? Math.round(((s2Count - s3Count) / s2Count) * 100) : 0,
@@ -387,7 +476,7 @@ async function getFunnelAnalytics(req, res, next) {
       {
         stepOrder: 4,
         name: 'Checkout & Order',
-        description: 'Initiated Checkout & Order',
+        description: 'Initiated Order / Conversion',
         sessionsCount: s4Count,
         conversionRatePercent: Math.round((s4Count / s1Count) * 100),
         dropoffRatePercent: s3Count > 0 ? Math.round(((s3Count - s4Count) / s3Count) * 100) : 0,
@@ -407,6 +496,8 @@ async function getFunnelAnalytics(req, res, next) {
 }
 
 module.exports = {
+  buildSiteFilter,
+  getTrackedDomains,
   getClicks,
   getTrackedPages,
   getOverallStats,

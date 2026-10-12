@@ -15,6 +15,7 @@ const {
   getAnalyticsOverview,
   getProductInteractions,
   getFunnelAnalytics,
+  getTrackedDomains,
 } = require('../controllers/analyticsController');
 
 // Health Check
@@ -43,6 +44,7 @@ router.get('/stats', getOverallStats);
 router.get('/analytics/overview', getAnalyticsOverview);
 router.get('/analytics/product-interactions', getProductInteractions);
 router.get('/analytics/funnel', getFunnelAnalytics);
+router.get('/analytics/domains', getTrackedDomains);
 
 // Optional Seeding Trigger for Live Demonstration
 const seedData = require('../utils/seedData');

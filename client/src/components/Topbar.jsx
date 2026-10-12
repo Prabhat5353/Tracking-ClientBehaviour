@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, Play, Pause, Sparkles, Radio } from 'lucide-react';
+import { RefreshCw, Play, Pause, Sparkles, Radio, Globe, ChevronDown } from 'lucide-react';
 
 export default function Topbar({
   activeTab,
@@ -9,6 +9,9 @@ export default function Topbar({
   isRefreshing,
   onSeedData,
   isSeeding,
+  domains = [],
+  selectedSiteId = 'ALL',
+  onSelectSiteId,
 }) {
   const titles = {
     overview: {
@@ -27,6 +30,10 @@ export default function Topbar({
       title: 'Visual Heatmap & Click Density Engine',
       subtitle: 'Interactive coordinate density canvas, radial glow mapping, and URL filtering',
     },
+    embed: {
+      title: 'Universal Website Embed & Installation Hub',
+      subtitle: 'Generate tracking tags, view platform integration guides, and monitor connected websites',
+    },
   };
 
   const current = titles[activeTab] || titles.overview;
@@ -44,7 +51,27 @@ export default function Topbar({
         <p className="text-xs text-slate-400 mt-0.5">{current.subtitle}</p>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center flex-wrap gap-3">
+        {/* Connected Site Filter Dropdown */}
+        <div className="relative">
+          <div className="flex items-center gap-2 bg-dark-950 border border-white/15 px-3 py-1.5 rounded-xl text-xs">
+            <Globe className="w-3.5 h-3.5 text-brand-400 shrink-0" />
+            <select
+              value={selectedSiteId}
+              onChange={(e) => onSelectSiteId(e.target.value)}
+              className="bg-transparent text-slate-200 font-semibold focus:outline-none cursor-pointer pr-4 appearance-none text-xs"
+            >
+              <option value="ALL">🌐 All Connected Sites (Global)</option>
+              {domains.map((d, idx) => (
+                <option key={idx} value={d.siteId || d.domain}>
+                  ✦ {d.name} ({d.domain})
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-3 h-3 text-slate-400 pointer-events-none -ml-2" />
+          </div>
+        </div>
+
         {/* Quick Seed helper */}
         <button
           onClick={onSeedData}
@@ -53,7 +80,7 @@ export default function Topbar({
           title="Inject realistic multi-user actions into the analytics pipeline"
         >
           <Sparkles className={`w-3.5 h-3.5 ${isSeeding ? 'animate-spin' : ''}`} />
-          <span>{isSeeding ? 'Simulating...' : 'Simulate Activity'}</span>
+          <span>{isSeeding ? 'Simulating...' : 'Simulate Multi-Site Traffic'}</span>
         </button>
 
         {/* Auto Refresh Toggle */}

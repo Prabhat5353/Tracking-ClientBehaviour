@@ -208,5 +208,44 @@ describe('User Analytics API Endpoints', () => {
     assert.strictEqual(res.body.timeline[0].actionBadge, 'CART_ACTION');
     assert(Array.isArray(res.body.pagesTimeBreakdown));
   });
+
+  test('POST /api/events ingests external website event with domain & siteId', async () => {
+    const payload = {
+      sessionId: 'sess_ext_test_site',
+      eventType: 'click',
+      pageUrl: '/pricing.html',
+      coordinates: { x: 500, y: 350 },
+      metadata: {
+        domain: 'novacloud-ai.io',
+        siteId: 'novacloud-ai',
+        title: 'NovaCloud AI Pricing',
+        actionType: 'TIER_SELECT',
+        elementText: 'Deploy Enterprise Cluster',
+      },
+    };
+
+    const res = await request(app).post('/api/events').send(payload);
+    assert.strictEqual(res.status, 201);
+    assert.strictEqual(res.body.event.metadata.domain, 'novacloud-ai.io');
+    assert.strictEqual(res.body.event.metadata.siteId, 'novacloud-ai');
+  });
+
+  test('GET /api/analytics/domains discovers external domains and aggregates counts', async () => {
+    const res = await request(app).get('/api/analytics/domains');
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.success, true);
+    assert(Array.isArray(res.body.domains));
+    const nova = res.body.domains.find((d) => d.siteId === 'novacloud-ai' || d.domain === 'novacloud-ai.io');
+    assert(nova, 'Expected novacloud-ai domain in /api/analytics/domains');
+    assert(nova.totalEvents >= 1);
+  });
+
+  test('GET /api/analytics/overview supports siteId filtering', async () => {
+    const res = await request(app).get('/api/analytics/overview?siteId=novacloud-ai');
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.success, true);
+    assert(res.body.kpis.totalEvents >= 1);
+    assert.strictEqual(res.body.kpis.totalSessions, 1);
+  });
 });
 

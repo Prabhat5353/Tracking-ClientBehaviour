@@ -18,11 +18,18 @@ import ProductMatrixTable from './components/Products/ProductMatrixTable';
 // Screen 4: Visual Heatmap
 import HeatmapViewer from './components/HeatmapViewer';
 
+// Screen 5: Universal Website Embed Hub
+import WebsiteEmbedHub from './components/Embed/WebsiteEmbedHub';
+
 import { api } from './api/client';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'products' | 'heatmap'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'products' | 'heatmap' | 'embed'
+
+  // Multi-Site & Domain Filtering state
+  const [selectedSiteId, setSelectedSiteId] = useState('ALL');
+  const [domains, setDomains] = useState([]);
 
   // Analytics datasets
   const [overviewData, setOverviewData] = useState({ kpis: {}, timeline: [] });
@@ -47,14 +54,16 @@ export default function App() {
   const fetchAllData = useCallback(async (isBackground = false) => {
     if (!isBackground) setIsRefreshing(true);
     try {
-      const [overviewRes, funnelRes, productRes, sessionsRes, pagesRes] = await Promise.all([
-        api.getOverview().catch(() => null),
-        api.getFunnel().catch(() => null),
-        api.getProductInteractions().catch(() => null),
-        api.getSessions().catch(() => []),
-        api.getPages().catch(() => ({ pages: [] })),
+      const [domainsRes, overviewRes, funnelRes, productRes, sessionsRes, pagesRes] = await Promise.all([
+        api.getDomains().catch(() => ({ domains: [] })),
+        api.getOverview(selectedSiteId).catch(() => null),
+        api.getFunnel(selectedSiteId).catch(() => null),
+        api.getProductInteractions(selectedSiteId).catch(() => null),
+        api.getSessions(selectedSiteId).catch(() => []),
+        api.getPages(selectedSiteId).catch(() => ({ pages: [] })),
       ]);
 
+      if (domainsRes && domainsRes.domains) setDomains(domainsRes.domains);
       if (overviewRes && overviewRes.success) setOverviewData(overviewRes);
       if (funnelRes && funnelRes.success) setFunnelData(funnelRes);
       if (productRes && productRes.success) setProductData(productRes);
@@ -69,9 +78,9 @@ export default function App() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [selectedSiteId]);
 
-  // Initial mount load
+  // Initial mount load and on site change
   useEffect(() => {
     fetchAllData(false);
   }, [fetchAllData]);
@@ -124,7 +133,7 @@ export default function App() {
 
       {/* Main Content Workspace */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Sticky Topbar with Live Telemetry Status */}
+        {/* Sticky Topbar with Live Telemetry Status & Multi-Site Selector */}
         <Topbar
           activeTab={activeTab}
           autoRefresh={autoRefresh}
@@ -133,6 +142,9 @@ export default function App() {
           isRefreshing={isRefreshing}
           onSeedData={handleSeedData}
           isSeeding={isSeeding}
+          domains={domains}
+          selectedSiteId={selectedSiteId}
+          onSelectSiteId={(site) => setSelectedSiteId(site)}
         />
 
         {/* Workspace Body */}
@@ -205,13 +217,23 @@ export default function App() {
               />
             </div>
           )}
+
+          {/* SCREEN 5: Universal Website Embed Hub */}
+          {activeTab === 'embed' && (
+            <div className="space-y-6">
+              <WebsiteEmbedHub
+                domains={domains}
+                onRefresh={() => fetchAllData(false)}
+              />
+            </div>
+          )}
         </main>
 
         {/* Global Footer */}
         <footer className="border-t border-white/5 py-4 px-8 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2 mt-auto bg-dark-900/30">
-          <p>CausalFunnel Enterprise Analytics Command Centre • Multi-User Telemetry Engine</p>
+          <p>CausalFunnel Enterprise Analytics Command Centre • Multi-Website Telemetry Engine</p>
           <div className="flex items-center gap-4 text-slate-400 font-mono text-[11px]">
-            <span>Latency: &lt;15ms</span>
+            <span>Active Site: <strong className="text-white">{selectedSiteId}</strong></span>
             <span>•</span>
             <span>REST Endpoints Active</span>
           </div>

@@ -80,6 +80,10 @@ function validateEvent(req, res, next) {
     productId: rawMeta.productId || req.body.productId || req.body.product_id || null,
     productName: rawMeta.productName || req.body.productName || req.body.product_name || null,
     actionType: rawMeta.actionType || req.body.actionType || req.body.action_type || (eventType === 'page_view' ? 'VIEW' : 'CLICK_CTA'),
+    domain: rawMeta.domain || req.body.domain || req.body.host || req.headers?.host || null,
+    siteId: rawMeta.siteId || req.body.siteId || req.body.site_id || rawMeta.domain || req.body.domain || null,
+    referrer: (rawMeta.referrer || req.body.referrer || req.headers?.referer || '').substring(0, 300) || null,
+    title: (rawMeta.title || req.body.title || '').substring(0, 150) || null,
   };
   req.body.metadata = metadata;
 

@@ -8,6 +8,7 @@ import {
   ShoppingBag,
   Activity,
   Zap,
+  Code2,
 } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab }) {
@@ -36,6 +37,13 @@ export default function Sidebar({ activeTab, setActiveTab }) {
       label: 'Visual Heatmap & Density',
       subtitle: 'Radial coordinate glow',
       icon: Flame,
+    },
+    {
+      id: 'embed',
+      label: 'Website Embed Hub',
+      subtitle: 'Universal install & guides',
+      icon: Code2,
+      badge: 'Any Site',
     },
   ];
 
@@ -131,6 +139,19 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-sky-400" />
             <span>SaaS Sandbox Demo</span>
+          </div>
+          <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
+        </a>
+
+        <a
+          href="/external/index.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between p-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-xs text-slate-300 hover:text-white transition-all group"
+        >
+          <div className="flex items-center gap-2">
+            <Zap className="w-4 h-4 text-purple-400" />
+            <span>NovaCloud AI (External)</span>
           </div>
           <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
         </a>

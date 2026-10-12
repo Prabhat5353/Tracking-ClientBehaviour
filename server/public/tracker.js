@@ -1,18 +1,23 @@
 /**
- * Enhanced Universal User Analytics & Session Tracker
+ * Universal User Analytics & Cross-Domain Session Tracker
  *
- * Requirements:
- * - Pure Vanilla JavaScript (zero external dependencies)
- * - Persistent session tracking via localStorage & cookies ('cf_session_id')
- * - Automatic page_view capture on initialization
- * - Window-level click tracking (pageX, pageY, pageUrl, timestamp)
- * - Auto-extraction of semantic attributes (data-product-id, data-product-name, data-action, elementText, selectors)
- * - Resilient async ingestion + navigator.sendBeacon fallback on beforeunload / visibilitychange
+ * Designed to be embedded on ANY external website (Shopify, WordPress, Webflow,
+ * Next.js, React, Static HTML, etc.).
+ *
+ * Features:
+ * - Pure Vanilla JavaScript (zero dependencies, < 5KB)
+ * - Automatic API endpoint discovery from script source origin (zero manual config)
+ * - Multi-site partitioning via `data-site-id` or automatic hostname derivation
+ * - Cross-domain resilient session tracking via localStorage + cookies
+ * - Automatic page_view capture on initialization & visibility change
+ * - Window-level click tracking (coordinate x, y, target metadata, product tags)
+ * - Guaranteed exit capture via `navigator.sendBeacon`
+ * - Full Single-Page Application (SPA) programmatic API (`window.CFAnalytics`)
  */
 (function (window, document) {
   'use strict';
 
-  // Prevent multiple initializations on the same document
+  // Prevent multiple initializations on the same page
   if (window.__CF_USER_TRACKER_INITIALIZED__) {
     return;
   }
@@ -50,14 +55,16 @@
    * Determine target ingestion endpoint:
    * 1. <script data-api-endpoint="..."> attribute
    * 2. Global window.CF_ANALYTICS_ENDPOINT variable
-   * 3. Fallback to DEFAULT_API_ENDPOINT
+   * 3. Automatic derivation from <script src="..."> origin
+   * 4. Fallback to DEFAULT_API_ENDPOINT
    */
   function resolveApiEndpoint() {
     try {
       const currentScript =
         document.currentScript ||
         document.querySelector('script[data-api-endpoint]') ||
-        document.querySelector('script[src*="tracker.js"]');
+        document.querySelector('script[src*="tracker.js"]') ||
+        document.querySelector('script[data-site-id]');
 
       if (currentScript && currentScript.getAttribute('data-api-endpoint')) {
         return currentScript.getAttribute('data-api-endpoint');
@@ -66,13 +73,53 @@
       if (window.CF_ANALYTICS_ENDPOINT && typeof window.CF_ANALYTICS_ENDPOINT === 'string') {
         return window.CF_ANALYTICS_ENDPOINT;
       }
+
+      // Auto-discover backend origin from script src URL
+      if (currentScript && currentScript.src) {
+        try {
+          const parsedUrl = new URL(currentScript.src, window.location.href);
+          if (parsedUrl.origin && parsedUrl.origin !== 'null') {
+            return `${parsedUrl.origin}/api/events`;
+          }
+        } catch (err) {}
+      }
     } catch (e) {
       // Ignore DOM lookup errors
     }
     return DEFAULT_API_ENDPOINT;
   }
 
+  /**
+   * Determine site identifier:
+   * 1. <script data-site-id="..."> attribute
+   * 2. Global window.CF_SITE_ID variable
+   * 3. Current window hostname fallback (e.g. "my-shopify-store.com")
+   */
+  function resolveSiteId() {
+    try {
+      const currentScript =
+        document.currentScript ||
+        document.querySelector('script[data-site-id]') ||
+        document.querySelector('script[data-api-endpoint]') ||
+        document.querySelector('script[src*="tracker.js"]');
+
+      if (currentScript && currentScript.getAttribute('data-site-id')) {
+        return currentScript.getAttribute('data-site-id');
+      }
+
+      if (window.CF_SITE_ID && typeof window.CF_SITE_ID === 'string') {
+        return window.CF_SITE_ID;
+      }
+
+      return window.location.hostname || 'external-site';
+    } catch (e) {
+      return 'external-site';
+    }
+  }
+
   const API_ENDPOINT = resolveApiEndpoint();
+  const SITE_ID = resolveSiteId();
+  const HOST_DOMAIN = typeof window !== 'undefined' && window.location ? window.location.hostname : 'unknown-host';
 
   /**
    * Generates a collision-resistant unique session identifier.
@@ -94,7 +141,7 @@
       try {
         sessionId = window.localStorage.getItem(SESSION_STORAGE_KEY);
       } catch (e) {
-        // localStorage might be blocked
+        // localStorage might be blocked in strict mode
       }
 
       // 2. Check cookie if localStorage empty
@@ -135,7 +182,7 @@
 
   /**
    * Dispatches event payload asynchronously to backend.
-   * Supports navigator.sendBeacon during page unload.
+   * Supports navigator.sendBeacon during page exit.
    */
   function sendEventPayload(payload, useBeacon = false) {
     try {
@@ -148,7 +195,7 @@
         if (sent) return;
       }
 
-      // 2. Use fetch with keepalive: true
+      // 2. Use fetch with keepalive: true and mode: cors
       if (typeof window.fetch === 'function') {
         window
           .fetch(API_ENDPOINT, {
@@ -186,31 +233,6 @@
   }
 
   /**
-   * Records a page view event.
-   */
-  function trackPageView(customUrl) {
-    const sessionId = getOrCreateSessionId();
-    const pageUrl = customUrl || getCurrentPageUrl();
-
-    const payload = {
-      sessionId,
-      session_id: sessionId,
-      eventType: 'page_view',
-      event_type: 'page_view',
-      pageUrl,
-      page_url: pageUrl,
-      timestamp: new Date().toISOString(),
-      coordinates: null,
-      metadata: {
-        actionType: 'VIEW',
-        elementText: document.title ? document.title.substring(0, 80) : null,
-      },
-    };
-
-    sendEventPayload(payload);
-  }
-
-  /**
    * Auto-extracts semantic target attributes from clicked elements
    */
   function extractSemanticMetadata(target) {
@@ -240,7 +262,7 @@
       // Extract cleaned, truncated element text preview
       let rawText = interactiveElem.innerText || interactiveElem.textContent || '';
       rawText = rawText.replace(/\s+/g, ' ').trim();
-      const elementText = rawText ? rawText.substring(0, 80) : null;
+      const elementText = rawText ? rawText.substring(0, 100) : null;
 
       // Classify action type if not explicitly tagged
       if (!actionType) {
@@ -250,42 +272,80 @@
           actionType = 'CHECKOUT_ACTION';
         } else if (productId || productName) {
           actionType = 'PRODUCT_CLICK';
-        } else {
+        } else if (interactiveElem.tagName === 'A' || interactiveElem.tagName === 'BUTTON') {
           actionType = 'CLICK_CTA';
+        } else {
+          actionType = 'CLICK';
         }
       }
 
       return {
         elementTag: (target.tagName || '').toUpperCase() || null,
         elementId: target.id || interactiveElem.id || null,
-        elementClass: typeof target.className === 'string' ? target.className.trim() : null,
+        elementClass: target.className && typeof target.className === 'string' ? target.className.substring(0, 80) : null,
         elementText,
         productId,
         productName,
         actionType,
+        domain: HOST_DOMAIN,
+        siteId: SITE_ID,
+        title: document.title ? document.title.substring(0, 120) : null,
+        referrer: document.referrer ? document.referrer.substring(0, 200) : null,
       };
     } catch (e) {
-      return {};
+      return {
+        domain: HOST_DOMAIN,
+        siteId: SITE_ID,
+      };
     }
   }
 
   /**
-   * Records a user click event with document coordinates and rich semantic context.
+   * Records a page view event.
+   */
+  function trackPageView(customUrl) {
+    const sessionId = getOrCreateSessionId();
+    const pageUrl = customUrl || getCurrentPageUrl();
+
+    const payload = {
+      sessionId,
+      session_id: sessionId,
+      eventType: 'page_view',
+      event_type: 'page_view',
+      pageUrl,
+      page_url: pageUrl,
+      timestamp: new Date().toISOString(),
+      coordinates: null,
+      metadata: {
+        actionType: 'VIEW',
+        domain: HOST_DOMAIN,
+        siteId: SITE_ID,
+        elementText: document.title ? document.title.substring(0, 100) : null,
+        title: document.title ? document.title.substring(0, 120) : null,
+        referrer: document.referrer ? document.referrer.substring(0, 200) : null,
+      },
+    };
+
+    sendEventPayload(payload);
+  }
+
+  /**
+   * Window-level click event listener
    */
   function trackClick(e) {
     try {
-      // Calculate coordinates with fallback if pageX/pageY are undefined
+      const sessionId = getOrCreateSessionId();
+      const pageUrl = getCurrentPageUrl();
+
+      // Compute coordinate relative to document
       let x = e.pageX;
       let y = e.pageY;
 
-      if (typeof x !== 'number' || typeof y !== 'number') {
-        const docElem = document.documentElement || document.body;
-        x = (e.clientX || 0) + (docElem.scrollLeft || 0);
-        y = (e.clientY || 0) + (docElem.scrollTop || 0);
+      if (x === undefined || y === undefined) {
+        x = e.clientX + (document.documentElement.scrollLeft || document.body.scrollLeft || 0);
+        y = e.clientY + (document.documentElement.scrollTop || document.body.scrollTop || 0);
       }
 
-      const sessionId = getOrCreateSessionId();
-      const pageUrl = getCurrentPageUrl();
       const metadata = extractSemanticMetadata(e.target);
 
       const payload = {
@@ -332,6 +392,8 @@
       metadata: {
         actionType: 'NAVIGATE',
         elementText: 'Page Exit / Visibility Change',
+        domain: HOST_DOMAIN,
+        siteId: SITE_ID,
       },
     };
     sendEventPayload(payload, true);
@@ -344,12 +406,31 @@
     }
   });
 
-  // Expose public API
-  window.UserTracker = {
-    version: '2.0.0',
+  // Public Programmatic & SPA API
+  const publicApi = {
+    version: '2.1.0',
     endpoint: API_ENDPOINT,
+    siteId: SITE_ID,
+    domain: HOST_DOMAIN,
     getSessionId: getOrCreateSessionId,
     trackPageView,
+    track: function (actionType, customMetadata = {}) {
+      const sessionId = getOrCreateSessionId();
+      const payload = {
+        sessionId,
+        eventType: 'click',
+        pageUrl: getCurrentPageUrl(),
+        timestamp: new Date().toISOString(),
+        coordinates: { x: 0, y: 0 },
+        metadata: {
+          actionType: actionType || 'CUSTOM_ACTION',
+          domain: HOST_DOMAIN,
+          siteId: SITE_ID,
+          ...customMetadata,
+        },
+      };
+      sendEventPayload(payload);
+    },
     trackCustomClick: function (x, y, url, meta) {
       const payload = {
         sessionId: getOrCreateSessionId(),
@@ -357,7 +438,11 @@
         pageUrl: url || getCurrentPageUrl(),
         timestamp: new Date().toISOString(),
         coordinates: { x: Math.round(x), y: Math.round(y) },
-        metadata: meta || null,
+        metadata: {
+          domain: HOST_DOMAIN,
+          siteId: SITE_ID,
+          ...(meta || {}),
+        },
       };
       sendEventPayload(payload);
     },
@@ -372,4 +457,7 @@
       }
     },
   };
+
+  window.CFAnalytics = publicApi;
+  window.UserTracker = publicApi;
 })(window, document);

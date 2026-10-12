@@ -320,13 +320,132 @@ async function seedData() {
             productId: user.product.id,
             productName: user.product.name,
             actionType: 'CHECKOUT_ACTION',
+            domain: 'localhost:5000',
+            siteId: 'lumina-store',
+          },
+        });
+      }
+    }
+
+    // Attach domain and siteId to all lumina events if not present
+    eventsToInsert.forEach((ev) => {
+      if (!ev.metadata) ev.metadata = {};
+      if (!ev.metadata.domain) ev.metadata.domain = 'localhost:5000';
+      if (!ev.metadata.siteId) ev.metadata.siteId = 'lumina-store';
+    });
+
+    // Seed 3 realistic sessions for external client website (NovaCloud AI)
+    const externalSessions = [
+      {
+        id: 'sess_ext_nova_dev_alpha',
+        minutesAgo: 40,
+        actions: [
+          {
+            type: 'page_view',
+            meta: { actionType: 'VIEW', elementText: 'NovaCloud AI — Autonomous Inference' },
+          },
+          {
+            type: 'click',
+            coords: { x: 380, y: 720 },
+            meta: {
+              elementTag: 'BUTTON',
+              elementId: 'btnInspectRouting',
+              elementText: 'Inspect Routing Topology →',
+              actionType: 'FEATURE_CLICK',
+              productName: 'Vector Routing Engine',
+            },
+          },
+          {
+            type: 'click',
+            coords: { x: 650, y: 1100 },
+            meta: {
+              elementTag: 'BUTTON',
+              elementId: 'tierEnterprise',
+              elementText: '64x H100 (Enterprise Mesh)',
+              actionType: 'TIER_SELECT',
+              productName: '64x H100 Mesh',
+            },
+          },
+          {
+            type: 'click',
+            coords: { x: 600, y: 1250 },
+            meta: {
+              elementTag: 'BUTTON',
+              elementId: 'btnProvisionNow',
+              elementText: 'Provision Instant Cluster 🚀',
+              actionType: 'CHECKOUT_ACTION',
+              productName: 'Instant Compute Provisioning',
+            },
+          },
+        ],
+      },
+      {
+        id: 'sess_ext_nova_founder_beta',
+        minutesAgo: 25,
+        actions: [
+          {
+            type: 'page_view',
+            meta: { actionType: 'VIEW', elementText: 'NovaCloud AI — Autonomous Inference' },
+          },
+          {
+            type: 'click',
+            coords: { x: 480, y: 380 },
+            meta: {
+              elementTag: 'BUTTON',
+              elementId: 'btnHeroDeployFree',
+              elementText: 'Start Free Sandbox Cluster →',
+              actionType: 'TRIAL_START',
+              productName: 'NovaCloud Free Tier',
+            },
+          },
+        ],
+      },
+      {
+        id: 'sess_ext_nova_architect_gamma',
+        minutesAgo: 10,
+        actions: [
+          {
+            type: 'page_view',
+            meta: { actionType: 'VIEW', elementText: 'NovaCloud AI — Autonomous Inference' },
+          },
+          {
+            type: 'click',
+            coords: { x: 800, y: 720 },
+            meta: {
+              elementTag: 'BUTTON',
+              elementId: 'btnInspectSecurity',
+              elementText: 'Download SOC-2 Type II Report →',
+              actionType: 'FEATURE_CLICK',
+              productName: 'Confidential Compute',
+            },
+          },
+        ],
+      },
+    ];
+
+    for (const ext of externalSessions) {
+      let t = now - ext.minutesAgo * 60 * 1000;
+      for (const act of ext.actions) {
+        t += getRandomInt(3000, 12000);
+        eventsToInsert.push({
+          sessionId: ext.id,
+          eventType: act.type,
+          pageUrl: '/external/index.html',
+          timestamp: new Date(t),
+          coordinates: act.coords || null,
+          metadata: {
+            ...act.meta,
+            domain: 'novacloud-ai.io',
+            siteId: 'novacloud-ai',
+            title: 'NovaCloud AI — Autonomous Inference & Cloud GPU Mesh',
+            referrer: 'https://news.ycombinator.com',
           },
         });
       }
     }
 
     const inserted = await Event.insertMany(eventsToInsert);
-    console.log(`✅ Successfully seeded ${inserted.length} analytics events across ${userArchetypes.length} sessions!`);
+    console.log(`✅ Successfully seeded ${inserted.length} analytics events across ${userArchetypes.length + externalSessions.length} sessions (multi-domain enabled)!`);
 
     if (require.main === module) {
       await disconnectDB();
