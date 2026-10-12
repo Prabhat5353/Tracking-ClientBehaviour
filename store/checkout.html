@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUMINA — Secure Express Checkout</title>
+  <meta name="description" content="Complete your studio equipment order with 256-bit encrypted checkout.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/store.css">
+  <link rel="stylesheet" href="css/cart.css">
+</head>
+<body>
+  <div class="store-ambient"></div>
+
+  <!-- Header -->
+  <header class="store-navbar" style="padding: 18px 0;">
+    <div class="store-container">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <a href="index.html" class="store-brand" id="checkoutBrand">
+          <div class="brand-symbol">✦</div>
+          <span>LUMINA</span>
+        </a>
+
+        <div style="display: flex; align-items: center; gap: 16px; font-size: 0.82rem; color: #94a3b8;">
+          <span style="color: #10b981; display: flex; align-items: center; gap: 4px;">
+            🔒 256-Bit SSL Encrypted Checkout
+          </span>
+          <span>|</span>
+          <a href="index.html" style="color: #38bdf8; text-decoration: none; font-weight: 600;" id="linkReturnShop">
+            ← Return to Store
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="store-container">
+    <div class="checkout-page-grid">
+      <!-- Left Column: Checkout Forms -->
+      <div class="checkout-steps-panel">
+        <form id="checkoutForm">
+          <!-- Step 1: Customer Contact -->
+          <div class="checkout-step">
+            <div class="step-header">
+              <div class="step-num">1</div>
+              <h2 class="step-title">Customer Information</h2>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address for Order Confirmation</label>
+              <input type="email" class="form-input" id="inputEmail" placeholder="you@company.com" required value="alex.creator@studio.design">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number (for Courier Tracking SMS)</label>
+              <input type="tel" class="form-input" id="inputPhone" placeholder="+1 (555) 019-2834" value="+1 (415) 890-1244">
+            </div>
+          </div>
+
+          <!-- Step 2: Shipping Destination -->
+          <div class="checkout-step">
+            <div class="step-header">
+              <div class="step-num">2</div>
+              <h2 class="step-title">Shipping Address</h2>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-input" id="inputFirstName" placeholder="Alex" required value="Alex">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input type="text" class="form-input" id="inputLastName" placeholder="Vance" required value="Vance">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Street Address</label>
+              <input type="text" class="form-input" id="inputAddress" placeholder="742 Evergreen Terrace, Suite 400" required value="450 Townsend St, Floor 3">
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">City</label>
+                <input type="text" class="form-input" id="inputCity" placeholder="San Francisco" required value="San Francisco">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Postal / ZIP Code</label>
+                <input type="text" class="form-input" id="inputZip" placeholder="94107" required value="94107">
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Payment Method -->
+          <div class="checkout-step">
+            <div class="step-header">
+              <div class="step-num">3</div>
+              <h2 class="step-title">Payment Method</h2>
+            </div>
+
+            <div class="payment-methods-grid">
+              <div class="payment-card active" id="payMethodCard">
+                <div class="payment-card-icon">💳</div>
+                <div class="payment-card-name">Credit Card</div>
+              </div>
+              <div class="payment-card" id="payMethodApple">
+                <div class="payment-card-icon">🍎</div>
+                <div class="payment-card-name">Apple Pay</div>
+              </div>
+              <div class="payment-card" id="payMethodPayPal">
+                <div class="payment-card-icon">🅿️</div>
+                <div class="payment-card-name">PayPal</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Card Number</label>
+              <input type="text" class="form-input" id="inputCardNumber" placeholder="4242 •••• •••• 4242" value="4242 •••• •••• 9012">
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Expiration Date</label>
+                <input type="text" class="form-input" id="inputCardExp" placeholder="MM/YY" value="08/29">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Security CVC</label>
+                <input type="text" class="form-input" id="inputCardCvc" placeholder="CVC" value="382">
+              </div>
+            </div>
+          </div>
+
+          <!-- Primary Submit CTA -->
+          <button type="submit" class="btn-checkout" id="btnPlaceOrder" style="padding: 16px; font-size: 1.05rem;">
+            <span>Complete Order &amp; Pay</span>
+            <span>🔒</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Right Column: Order Summary Sidebar -->
+      <aside class="checkout-summary-panel">
+        <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 20px; font-weight: 700;">
+          Order Summary
+        </h3>
+
+        <!-- Items Container -->
+        <div id="checkoutSummaryItems">
+          <!-- Rendered dynamically by checkout.js -->
+        </div>
+
+        <!-- Coupon row -->
+        <div class="coupon-row" style="margin-top: 20px;">
+          <input type="text" class="coupon-input" id="checkoutCouponInput" placeholder="Discount code (CAUSAL10)">
+          <button class="btn-apply-coupon" id="btnCheckoutApplyCoupon">Apply</button>
+        </div>
+
+        <!-- Financials -->
+        <div style="margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+          <div class="cart-summary-line">
+            <span>Subtotal</span>
+            <span id="checkoutSubtotal" style="color: #fff; font-weight: 600;">$0</span>
+          </div>
+          <div class="cart-summary-line" id="checkoutDiscountRow" style="display: none; color: var(--brand-emerald);">
+            <span>Coupon Discount</span>
+            <span id="checkoutDiscount">-$0</span>
+          </div>
+          <div class="cart-summary-line">
+            <span>Shipping</span>
+            <span id="checkoutShipping" style="color: #10b981; font-weight: 600;">FREE</span>
+          </div>
+          <div class="cart-summary-line">
+            <span>Estimated Sales Tax</span>
+            <span id="checkoutTax">$0</span>
+          </div>
+          <div class="cart-summary-line total" style="margin-bottom: 0;">
+            <span>Total to Pay</span>
+            <span id="checkoutTotal" style="color: #38bdf8;">$0</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Order Confirmation Modal -->
+  <div class="modal-backdrop" id="orderConfirmationModal">
+    <div class="modal-card" style="grid-template-columns: 1fr; max-width: 520px; padding: 40px; text-align: center;">
+      <div style="font-size: 4.5rem; margin-bottom: 16px;">🎉</div>
+      <span style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--brand-emerald); letter-spacing: 0.05em;">
+        Payment Authorized Successfully
+      </span>
+      <h2 style="font-size: 1.8rem; color: #fff; margin: 8px 0 12px; font-weight: 800;">
+        Thank You for Your Order!
+      </h2>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px;">
+        Your order <strong id="confirmationOrderNum" style="color: #38bdf8; font-family: monospace;">#LUM-102934</strong> has been placed. A tracking receipt has been dispatched to your email.
+      </p>
+
+      <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: left; font-size: 0.85rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span style="color: #94a3b8;">Charged Amount:</span>
+          <span id="confirmationTotal" style="font-weight: 700; color: #fff;">$0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #94a3b8;">Estimated Delivery:</span>
+          <span style="color: #10b981; font-weight: 600;">Thursday, 2 Business Days</span>
+        </div>
+      </div>
+
+      <a href="index.html" class="btn-checkout" style="padding: 14px; text-decoration: none;" id="btnContinueShopping">
+        Continue Shopping →
+      </a>
+    </div>
+  </div>
+
+  <!-- Standalone Tracking Script -->
+  <script src="../tracker/tracker.js" data-api-endpoint="http://localhost:5000/api/events"></script>
+  <!-- Checkout Logic -->
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/checkout.js"></script>
+</body>
+</html>

@@ -29,14 +29,16 @@ if (process.env.NODE_ENV !== 'test') {
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve Tracker script and Demo webpage statically for zero-friction local testing
+// Serve Tracker script, Demo webpage, and Full E-Commerce Store statically
 const trackerPath = path.resolve(__dirname, '../../tracker');
 const demoPath = path.resolve(__dirname, '../../demo');
+const storePath = path.resolve(__dirname, '../../store');
 const clientDistPath = path.resolve(__dirname, '../../client/dist');
 const fs = require('fs');
 
 app.use('/tracker', express.static(trackerPath));
 app.use('/demo', express.static(demoPath));
+app.use('/store', express.static(storePath));
 if (fs.existsSync(clientDistPath)) {
   app.use('/dashboard', express.static(clientDistPath));
 }
@@ -44,7 +46,7 @@ if (fs.existsSync(clientDistPath)) {
 // API Root & documentation redirect
 app.get('/', (req, res) => {
   res.json({
-    name: 'User Analytics & Session Tracking API',
+    name: 'CausalFunnel - User Analytics & Session Tracking API',
     version: '1.0.0',
     documentation: '/api/health',
     endpoints: {
@@ -55,6 +57,7 @@ app.get('/', (req, res) => {
       getPages: 'GET /api/pages',
       getStats: 'GET /api/stats',
     },
+    ecommerceStore: `http://localhost:${PORT}/store/index.html`,
     demoPage: `http://localhost:${PORT}/demo/index.html`,
     trackerScript: `http://localhost:${PORT}/tracker/tracker.js`,
     adminDashboard: fs.existsSync(clientDistPath) ? `http://localhost:${PORT}/dashboard` : 'Run `npm run dev` in /client',
@@ -85,10 +88,11 @@ async function startServer() {
     await connectDB();
     serverInstance = app.listen(PORT, () => {
       console.log(`====================================================`);
-      console.log(`🚀 Analytics Server listening on port ${PORT}`);
-      console.log(`📡 API Base:       http://localhost:${PORT}/api`);
-      console.log(`🌐 Demo Webpage:   http://localhost:${PORT}/demo/index.html`);
-      console.log(`📦 Tracker Script: http://localhost:${PORT}/tracker/tracker.js`);
+      console.log(`🚀 CausalFunnel Analytics Server listening on port ${PORT}`);
+      console.log(`🛍️ E-Commerce Store: http://localhost:${PORT}/store/index.html`);
+      console.log(`📡 API Base:         http://localhost:${PORT}/api`);
+      console.log(`🌐 Legacy Demo:      http://localhost:${PORT}/demo/index.html`);
+      console.log(`📦 Tracker Script:   http://localhost:${PORT}/tracker/tracker.js`);
       console.log(`====================================================`);
     });
     return serverInstance;

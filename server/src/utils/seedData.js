@@ -5,40 +5,41 @@ const { connectDB, disconnectDB } = require('../config/db');
 const Event = require('../models/Event');
 
 const PAGES = [
+  '/store/index.html',
+  '/store/checkout.html',
   '/demo/index.html',
-  '/demo/features.html',
   '/demo/pricing.html',
-  '/demo/checkout.html',
 ];
 
 // Click clusters simulating real user interactions on UI components
 const BUTTON_HOTSPOTS = {
+  '/store/index.html': [
+    { name: 'Hero CTA (Explore Collection)', baseX: 300, baseY: 310, spread: 25 },
+    { name: 'Hero CTA (Preview Apex ANC)', baseX: 470, baseY: 310, spread: 20 },
+    { name: 'Category Tab: Studio Audio', baseX: 430, baseY: 48, spread: 15 },
+    { name: 'Category Tab: Workstation', baseX: 530, baseY: 48, spread: 15 },
+    { name: 'Navbar Bag Trigger', baseX: 1180, baseY: 48, spread: 12 },
+    { name: 'Apex Headphones Add to Cart', baseX: 320, baseY: 670, spread: 20 },
+    { name: 'Tactile Keyboard Add to Cart', baseX: 640, baseY: 670, spread: 20 },
+    { name: 'Chrono Watch Add to Cart', baseX: 960, baseY: 670, spread: 20 },
+    { name: 'Cart Drawer Proceed to Checkout', baseX: 1080, baseY: 520, spread: 25 },
+  ],
+  '/store/checkout.html': [
+    { name: 'Email Input', baseX: 450, baseY: 220, spread: 20 },
+    { name: 'Address Input', baseX: 450, baseY: 420, spread: 20 },
+    { name: 'Credit Card Payment Method', baseX: 360, baseY: 560, spread: 15 },
+    { name: 'Apply Coupon Button', baseX: 1080, baseY: 380, spread: 15 },
+    { name: 'Complete Order Button', baseX: 520, baseY: 760, spread: 25 },
+  ],
   '/demo/index.html': [
-    { name: 'Hero Primary CTA (Get Started)', baseX: 480, baseY: 310, spread: 25 },
-    { name: 'Hero Secondary CTA (Watch Demo)', baseX: 640, baseY: 310, spread: 20 },
+    { name: 'Hero Primary CTA', baseX: 480, baseY: 310, spread: 25 },
+    { name: 'Hero Secondary CTA', baseX: 640, baseY: 310, spread: 20 },
     { name: 'Navbar Pricing Link', baseX: 520, baseY: 42, spread: 15 },
-    { name: 'Navbar Features Link', baseX: 430, baseY: 42, spread: 15 },
     { name: 'Feature Card 1', baseX: 320, baseY: 580, spread: 35 },
-    { name: 'Feature Card 2', baseX: 600, baseY: 580, spread: 35 },
-    { name: 'Feature Card 3', baseX: 880, baseY: 580, spread: 35 },
-    { name: 'Footer Newsletter', baseX: 600, baseY: 850, spread: 40 },
   ],
   '/demo/pricing.html': [
-    { name: 'Starter Plan Button', baseX: 300, baseY: 440, spread: 25 },
     { name: 'Pro Plan Button (Popular)', baseX: 600, baseY: 430, spread: 30 },
-    { name: 'Enterprise Contact Button', baseX: 900, baseY: 440, spread: 25 },
-    { name: 'Annual Billing Toggle', baseX: 600, baseY: 220, spread: 15 },
-    { name: 'FAQ Accordion 1', baseX: 600, baseY: 650, spread: 40 },
-  ],
-  '/demo/features.html': [
-    { name: 'Deep Dive Button', baseX: 450, baseY: 380, spread: 30 },
-    { name: 'Interactive Demo Canvas', baseX: 750, baseY: 420, spread: 60 },
-    { name: 'Documentation Link', baseX: 600, baseY: 700, spread: 20 },
-  ],
-  '/demo/checkout.html': [
-    { name: 'Complete Order Button', baseX: 620, baseY: 540, spread: 20 },
-    { name: 'Apply Coupon', baseX: 780, baseY: 360, spread: 15 },
-    { name: 'Back to Cart', baseX: 450, baseY: 540, spread: 20 },
+    { name: 'Starter Plan Button', baseX: 300, baseY: 440, spread: 25 },
   ],
 };
 

@@ -91,15 +91,15 @@ export default function Navbar({
             <span>Refresh</span>
           </button>
 
-          {/* Open Demo Page Link */}
+          {/* Open E-Commerce Storefront Link */}
           <a
-            href="http://localhost:5000/demo/index.html"
+            href="http://localhost:5000/store/index.html"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-brand-indigo/20 to-brand-blue/20 hover:from-brand-indigo/30 hover:to-brand-blue/30 text-xs font-semibold text-brand-cyan border border-brand-blue/30 transition-all"
-            title="Open demo landing page to generate live clicks & pageviews"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-brand-indigo/30 to-brand-blue/30 hover:from-brand-indigo/40 hover:to-brand-blue/40 text-xs font-semibold text-brand-cyan border border-brand-blue/40 transition-all shadow-sm"
+            title="Open full e-commerce store to generate live shopping journeys and click events"
           >
-            <span>Live Demo</span>
+            <span>🛍️ E-Commerce Store</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
