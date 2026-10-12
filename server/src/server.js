@@ -43,8 +43,13 @@ if (fs.existsSync(clientDistPath)) {
   app.use('/dashboard', express.static(clientDistPath));
 }
 
-// API Root & documentation redirect
+// API Root & browser dashboard redirect
 app.get('/', (req, res) => {
+  // If request originates from a web browser, redirect straight to Admin Dashboard
+  if (req.accepts('html') && fs.existsSync(clientDistPath)) {
+    return res.redirect('/dashboard/');
+  }
+
   res.json({
     name: 'CausalFunnel - User Analytics & Session Tracking API',
     version: '1.0.0',
