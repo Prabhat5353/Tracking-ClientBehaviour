@@ -42,6 +42,10 @@ async function getAllSessions(req, res, next) {
           pagesVisited: { $addToSet: '$pageUrl' },
           domain: { $first: '$metadata.domain' },
           siteId: { $first: '$metadata.siteId' },
+          // User identity: use $last so identified events (which come after login) take priority
+          userId:    { $last: '$userId' },
+          userEmail: { $last: '$userEmail' },
+          userName:  { $last: '$userName' },
         },
       },
       {
@@ -62,6 +66,9 @@ async function getAllSessions(req, res, next) {
           durationSeconds: {
             $round: [{ $divide: [{ $subtract: ['$lastActive', '$firstSeen'] }, 1000] }, 0],
           },
+          userId: 1,
+          userEmail: 1,
+          userName: 1,
         },
       },
       {
@@ -178,7 +185,10 @@ async function getSessionReport(req, res, next) {
       let actionLabel = isPageView ? `Page View: ${event.pageUrl}` : 'Click Interaction';
 
       const meta = event.metadata || {};
-      if (meta.actionType === 'CART_ACTION' || (meta.elementText && /add to (cart|bag)/i.test(meta.elementText))) {
+      if (meta.actionType === 'USER_LOGIN') {
+        actionBadge = 'USER_LOGIN';
+        actionLabel = `User Identified — ${event.userName || event.userEmail || 'Known User'}`;
+      } else if (meta.actionType === 'CART_ACTION' || (meta.elementText && /add to (cart|bag)/i.test(meta.elementText))) {
         actionBadge = 'CART_ACTION';
         actionLabel = meta.productName ? `Added to Bag: ${meta.productName}` : 'Added Item to Cart';
       } else if (meta.actionType === 'CHECKOUT_ACTION' || /checkout|complete order|pay/i.test(meta.elementText || '')) {
@@ -235,6 +245,9 @@ async function getSessionReport(req, res, next) {
 
     const pagesTimeBreakdown = Object.values(pageTimeMap);
 
+    // Extract user identity — prefer the last identified event
+    const identifiedEvent = [...events].reverse().find(e => e.userId || e.userEmail);
+
     return res.status(200).json({
       success: true,
       sessionId,
@@ -248,6 +261,10 @@ async function getSessionReport(req, res, next) {
         durationSeconds: Math.round(durationMs / 1000),
         pagesVisitedCount: pagesVisitedSet.size,
         pagesVisited: Array.from(pagesVisitedSet),
+        // User identity
+        userId:    identifiedEvent?.userId    || null,
+        userEmail: identifiedEvent?.userEmail || null,
+        userName:  identifiedEvent?.userName  || null,
       },
       pagesTimeBreakdown,
       timeline,

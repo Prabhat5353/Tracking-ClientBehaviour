@@ -67,6 +67,11 @@ const eventSchema = new mongoose.Schema(
       type: metadataSchema,
       default: null,
     },
+
+    // Identity fields — populated when a logged-in user is tracked
+    userId: { type: String, default: null, index: true },
+    userEmail: { type: String, default: null },
+    userName: { type: String, default: null },
   },
   {
     timestamps: false,

@@ -6,7 +6,7 @@ const Event = require('../models/Event');
  */
 async function trackEvent(req, res, next) {
   try {
-    const { sessionId, eventType, pageUrl, timestamp, coordinates, metadata } = req.body;
+    const { sessionId, eventType, pageUrl, timestamp, coordinates, metadata, userId, userEmail, userName } = req.body;
 
     const event = new Event({
       sessionId,
@@ -15,6 +15,9 @@ async function trackEvent(req, res, next) {
       timestamp: timestamp || new Date(),
       coordinates: eventType === 'click' ? coordinates : null,
       metadata: metadata || null,
+      userId: userId || null,
+      userEmail: userEmail || null,
+      userName: userName || null,
     });
 
     const savedEvent = await event.save();

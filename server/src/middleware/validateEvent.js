@@ -87,6 +87,11 @@ function validateEvent(req, res, next) {
   };
   req.body.metadata = metadata;
 
+  // Normalize optional user identity fields (from logged-in tracker)
+  req.body.userId = req.body.userId || req.body.user_id || null;
+  req.body.userEmail = req.body.userEmail || req.body.user_email || null;
+  req.body.userName = req.body.userName || req.body.user_name || null;
+
   // Validate timestamp if provided
   if (timestamp) {
     const parsedDate = new Date(timestamp);

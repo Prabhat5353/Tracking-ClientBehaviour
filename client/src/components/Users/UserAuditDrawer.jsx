@@ -49,10 +49,15 @@ const BADGE_CONFIG = {
     icon: Compass,
     label: 'NAVIGATION',
   },
-  FILTER: {
-    bg: 'bg-slate-500/10 text-slate-300 border-slate-500/30',
-    icon: Layers,
-    label: 'FILTER',
+  USER_LOGIN: {
+    bg: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30',
+    icon: Sparkles,
+    label: 'USER LOGIN',
+  },
+  CLICK: {
+    bg: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+    icon: MousePointer,
+    label: 'CLICK',
   },
 };
 
@@ -117,6 +122,29 @@ export default function UserAuditDrawer({ reportData, onClose, isLoading }) {
             </div>
           ) : (
             <>
+              {/* ── User Identity Profile Card ────────────────────────────── */}
+              {(summary.userName || summary.userEmail) && (
+                <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-lg font-bold shrink-0 shadow-lg">
+                    {summary.userName
+                      ? summary.userName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase()
+                      : '?'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white font-bold text-sm">{summary.userName || 'Identified User'}</div>
+                    {summary.userEmail && (
+                      <div className="text-indigo-300 text-xs mt-0.5 truncate">{summary.userEmail}</div>
+                    )}
+                    {summary.userId && (
+                      <div className="text-slate-500 text-[10px] font-mono mt-1 truncate">ID: {summary.userId}</div>
+                    )}
+                  </div>
+                  <span className="shrink-0 px-2 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold">
+                    IDENTIFIED
+                  </span>
+                </div>
+              )}
+
               {/* Session Metrics Bar */}
               <div className="grid grid-cols-3 gap-3 p-4 rounded-xl bg-dark-800/80 border border-white/10 text-xs">
                 <div>

@@ -59,10 +59,19 @@
             <div class="badge-counter" id="cartBadgeCount" style="display: none;">0</div>
           </button>
 
-          <!-- Link to Analytics Dashboard -->
-          <a href="http://localhost:5173" target="_blank" class="cat-tab" style="padding: 6px 14px; font-size: 0.78rem; text-decoration: none; border-color: rgba(59, 130, 246, 0.4); color: #38bdf8;" id="navOpenAnalytics">
-            📊 View Analytics
-          </a>
+          <!-- Auth Button: shows Login when logged out, avatar when logged in -->
+          <div id="authNavArea" style="display:flex;align-items:center;gap:8px;">
+            <button id="btnOpenAuth" class="cat-tab" style="padding:6px 16px;font-size:0.82rem;font-weight:600;border-color:rgba(99,102,241,0.6);color:#a5b4fc;background:rgba(99,102,241,0.12);display:flex;align-items:center;gap:6px;" title="Sign in or create an account">
+              <span>👤</span> Sign In
+            </button>
+            <div id="authUserPill" style="display:none;align-items:center;gap:8px;cursor:pointer;" title="Your Account">
+              <div id="authAvatarCircle" style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;color:#fff;border:2px solid rgba(99,102,241,0.5);">?</div>
+              <div style="display:flex;flex-direction:column;line-height:1.2;">
+                <span id="authNavName" style="font-size:0.8rem;font-weight:600;color:#e2e8f0;">User</span>
+                <button id="btnAuthLogout" onclick="handleLogout()" style="font-size:0.68rem;color:#94a3b8;background:none;border:none;cursor:pointer;padding:0;text-align:left;">Sign out</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -244,13 +253,13 @@
     <span id="toastMessage">Added to shopping bag!</span>
   </div>
 
-  <!-- Floating Live Analytics HUD (So Evaluators See the Tracker in Action) -->
+  <!-- Floating Live Analytics HUD (So Evaluators See the Tracker in Action) 
   <aside style="position: fixed; bottom: 20px; right: 20px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 14px; padding: 14px; font-size: 0.78rem; color: #cbd5e1; z-index: 150; backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0,0,0,0.6); width: 300px;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px;">
       <span style="font-weight: bold; color: #fff; display: flex; align-items: center; gap: 6px;">
         <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
         CausalFunnel Tracker
-      </span>
+      </span> --->
       <span style="color: #64748b;">Active</span>
     </div>
     <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
@@ -271,12 +280,283 @@
     </div>
   </aside>
 
+  <!-- ═══════════════════════════════════════════════════════
+       AUTH MODAL — Login / Register
+  ════════════════════════════════════════════════════════ -->
+  <div id="authModalOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div id="authModalBox" style="background:#0f1117;border:1px solid rgba(99,102,241,0.3);border-radius:20px;padding:40px 36px;width:100%;max-width:420px;margin:16px;box-shadow:0 25px 60px rgba(0,0,0,0.6),0 0 0 1px rgba(99,102,241,0.15);position:relative;">
+
+      <!-- Close -->
+      <button onclick="closeAuthModal()" style="position:absolute;top:16px;right:18px;background:none;border:none;color:#64748b;font-size:1.4rem;cursor:pointer;line-height:1;" aria-label="Close">&times;</button>
+
+      <!-- Brand Mark -->
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="display:inline-flex;align-items:center;gap:10px;">
+          <div style="width:40px;height:40px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">✦</div>
+          <span style="font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,#e2e8f0,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">LUMINA</span>
+        </div>
+        <p style="margin:8px 0 0;color:#64748b;font-size:0.85rem;">Your creative studio account</p>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;background:rgba(255,255,255,0.04);border-radius:12px;padding:4px;margin-bottom:28px;">
+        <button id="tabLogin" onclick="switchAuthTab('login')" style="flex:1;padding:9px;border:none;border-radius:9px;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;">Sign In</button>
+        <button id="tabRegister" onclick="switchAuthTab('register')" style="flex:1;padding:9px;border:none;border-radius:9px;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:#64748b;">Create Account</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" onsubmit="handleLogin(event)" style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <label style="display:block;font-size:0.78rem;color:#94a3b8;margin-bottom:6px;font-weight:500;">Email Address</label>
+          <input id="loginEmail" type="email" placeholder="you@example.com" required autocomplete="email"
+            style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#e2e8f0;font-size:0.9rem;outline:none;box-sizing:border-box;transition:border-color .2s;"
+            onfocus="this.style.borderColor='rgba(99,102,241,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        </div>
+        <div>
+          <label style="display:block;font-size:0.78rem;color:#94a3b8;margin-bottom:6px;font-weight:500;">Password</label>
+          <input id="loginPassword" type="password" placeholder="Your password" required autocomplete="current-password"
+            style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#e2e8f0;font-size:0.9rem;outline:none;box-sizing:border-box;transition:border-color .2s;"
+            onfocus="this.style.borderColor='rgba(99,102,241,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        </div>
+        <div id="loginError" style="display:none;color:#f87171;font-size:0.8rem;background:rgba(248,113,113,0.1);padding:10px 12px;border-radius:8px;border:1px solid rgba(248,113,113,0.2);"></div>
+        <button type="submit" id="btnLoginSubmit" style="width:100%;padding:13px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-size:0.95rem;font-weight:700;cursor:pointer;transition:opacity .2s;">
+          Sign In →
+        </button>
+        <p style="text-align:center;color:#64748b;font-size:0.8rem;margin:0;">Don't have an account? <span onclick="switchAuthTab('register')" style="color:#a5b4fc;cursor:pointer;font-weight:600;">Create one free</span></p>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="registerForm" onsubmit="handleRegister(event)" style="display:none;flex-direction:column;gap:16px;">
+        <div>
+          <label style="display:block;font-size:0.78rem;color:#94a3b8;margin-bottom:6px;font-weight:500;">Full Name</label>
+          <input id="regName" type="text" placeholder="Your name" required autocomplete="name"
+            style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#e2e8f0;font-size:0.9rem;outline:none;box-sizing:border-box;transition:border-color .2s;"
+            onfocus="this.style.borderColor='rgba(99,102,241,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        </div>
+        <div>
+          <label style="display:block;font-size:0.78rem;color:#94a3b8;margin-bottom:6px;font-weight:500;">Email Address</label>
+          <input id="regEmail" type="email" placeholder="you@example.com" required autocomplete="email"
+            style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#e2e8f0;font-size:0.9rem;outline:none;box-sizing:border-box;transition:border-color .2s;"
+            onfocus="this.style.borderColor='rgba(99,102,241,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        </div>
+        <div>
+          <label style="display:block;font-size:0.78rem;color:#94a3b8;margin-bottom:6px;font-weight:500;">Password <span style="color:#64748b;font-weight:400;">(min. 6 characters)</span></label>
+          <input id="regPassword" type="password" placeholder="Create a password" required autocomplete="new-password" minlength="6"
+            style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#e2e8f0;font-size:0.9rem;outline:none;box-sizing:border-box;transition:border-color .2s;"
+            onfocus="this.style.borderColor='rgba(99,102,241,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        </div>
+        <div id="regError" style="display:none;color:#f87171;font-size:0.8rem;background:rgba(248,113,113,0.1);padding:10px 12px;border-radius:8px;border:1px solid rgba(248,113,113,0.2);"></div>
+        <div id="regSuccess" style="display:none;color:#34d399;font-size:0.8rem;background:rgba(52,211,153,0.1);padding:10px 12px;border-radius:8px;border:1px solid rgba(52,211,153,0.2);"></div>
+        <button type="submit" id="btnRegSubmit" style="width:100%;padding:13px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-size:0.95rem;font-weight:700;cursor:pointer;transition:opacity .2s;">
+          Create Account →
+        </button>
+        <p style="text-align:center;color:#64748b;font-size:0.8rem;margin:0;">Already a member? <span onclick="switchAuthTab('login')" style="color:#a5b4fc;cursor:pointer;font-weight:600;">Sign in</span></p>
+      </form>
+
+    </div>
+  </div>
+
   <!-- Load Standalone CausalFunnel Tracking Script -->
   <script src="../tracker/tracker.js" data-api-endpoint="http://localhost:5000/api/events"></script>
   <!-- Store Logic -->
   <script src="js/products.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/store.js"></script>
+
+  <!-- Auth Logic -->
+  <script>
+    const AUTH_API = 'http://localhost:5000/api/auth';
+    const AUTH_TOKEN_KEY = 'lumina_auth_token';
+    const AUTH_USER_KEY  = 'lumina_auth_user';
+
+    // ── Modal helpers ──────────────────────────────────────────────────────────
+    function openAuthModal(tab) {
+      document.getElementById('authModalOverlay').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      switchAuthTab(tab || 'login');
+    }
+    function closeAuthModal() {
+      document.getElementById('authModalOverlay').style.display = 'none';
+      document.body.style.overflow = '';
+      clearAuthErrors();
+    }
+    function clearAuthErrors() {
+      ['loginError','regError','regSuccess'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.style.display = 'none'; el.textContent = ''; }
+      });
+    }
+
+    // Click backdrop to close
+    document.getElementById('authModalOverlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('authModalOverlay')) closeAuthModal();
+    });
+    // Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAuthModal();
+    });
+
+    // Open modal button
+    document.getElementById('btnOpenAuth').addEventListener('click', () => openAuthModal('login'));
+
+    // ── Tab switching ──────────────────────────────────────────────────────────
+    function switchAuthTab(tab) {
+      clearAuthErrors();
+      const isLogin = tab === 'login';
+      document.getElementById('loginForm').style.display    = isLogin ? 'flex' : 'none';
+      document.getElementById('registerForm').style.display = isLogin ? 'none' : 'flex';
+      const activeStyle  = 'background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;';
+      const passiveStyle = 'background:transparent;color:#64748b;';
+      document.getElementById('tabLogin').style.cssText    += isLogin ? activeStyle : passiveStyle;
+      document.getElementById('tabRegister').style.cssText += isLogin ? passiveStyle : activeStyle;
+    }
+
+    // ── Navbar UI update ───────────────────────────────────────────────────────
+    function updateNavAuth(user) {
+      const btnOpen = document.getElementById('btnOpenAuth');
+      const pill    = document.getElementById('authUserPill');
+      const avatar  = document.getElementById('authAvatarCircle');
+      const nameEl  = document.getElementById('authNavName');
+      if (user) {
+        btnOpen.style.display = 'none';
+        pill.style.display    = 'flex';
+        const initials = user.name ? user.name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase() : '?';
+        avatar.textContent  = initials;
+        nameEl.textContent  = user.name || user.email.split('@')[0];
+      } else {
+        btnOpen.style.display = '';
+        pill.style.display    = 'none';
+      }
+    }
+
+    // ── Login ──────────────────────────────────────────────────────────────────
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnLoginSubmit');
+      const errEl = document.getElementById('loginError');
+      btn.disabled = true; btn.textContent = 'Signing in…';
+      errEl.style.display = 'none';
+      try {
+        const res = await fetch(AUTH_API + '/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email:    document.getElementById('loginEmail').value.trim(),
+            password: document.getElementById('loginPassword').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Login failed');
+        onAuthSuccess(data);
+      } catch(err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Sign In →';
+      }
+    }
+
+    // ── Register ───────────────────────────────────────────────────────────────
+    async function handleRegister(e) {
+      e.preventDefault();
+      const btn     = document.getElementById('btnRegSubmit');
+      const errEl   = document.getElementById('regError');
+      const succEl  = document.getElementById('regSuccess');
+      btn.disabled = true; btn.textContent = 'Creating account…';
+      errEl.style.display = 'none'; succEl.style.display = 'none';
+      try {
+        const res = await fetch(AUTH_API + '/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name:     document.getElementById('regName').value.trim(),
+            email:    document.getElementById('regEmail').value.trim(),
+            password: document.getElementById('regPassword').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Registration failed');
+        succEl.textContent = '🎉 Account created! Welcome to LUMINA.';
+        succEl.style.display = 'block';
+        setTimeout(() => onAuthSuccess(data), 1200);
+      } catch(err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Create Account →';
+      }
+    }
+
+    // ── On auth success (login or register) ────────────────────────────────────
+    function onAuthSuccess(data) {
+      localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+      localStorage.setItem(AUTH_USER_KEY,  JSON.stringify(data.user));
+      updateNavAuth(data.user);
+      closeAuthModal();
+      // Tell the tracker who this real user is
+      if (window.CFAnalytics && window.CFAnalytics.setUser) {
+        window.CFAnalytics.setUser({
+          userId: data.user._id,
+          email:  data.user.email,
+          name:   data.user.name,
+        });
+      }
+      // Show a welcome toast
+      showToast('👋 Welcome back, ' + (data.user.name || 'friend') + '!');
+    }
+
+    // ── Logout ─────────────────────────────────────────────────────────────────
+    function handleLogout() {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(AUTH_USER_KEY);
+      if (window.CFAnalytics) {
+        window.CFAnalytics.clearUser();
+        window.CFAnalytics.resetSession();
+      }
+      updateNavAuth(null);
+      showToast('You've been signed out.');
+    }
+
+    // ── Toast notification ─────────────────────────────────────────────────────
+    function showToast(msg) {
+      let toast = document.getElementById('authToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'authToast';
+        toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:12px 24px;border-radius:12px;font-size:0.9rem;font-weight:600;z-index:99999;box-shadow:0 8px 24px rgba(99,102,241,0.4);transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .35s;opacity:0;white-space:nowrap;';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+      });
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(60px)';
+      }, 3200);
+    }
+
+    // ── Restore session on page load ───────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      const storedUser  = localStorage.getItem(AUTH_USER_KEY);
+      const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (storedUser && storedToken) {
+        try {
+          const user = JSON.parse(storedUser);
+          updateNavAuth(user);
+          // Re-identify with tracker on page reload
+          if (window.CFAnalytics && window.CFAnalytics.setUser) {
+            window.CFAnalytics.setUser({
+              userId: user._id,
+              email:  user.email,
+              name:   user.name,
+            });
+          }
+        } catch(e) {}
+      }
+    });
+  </script>
 
   <!-- Simple HUD updater -->
   <script>

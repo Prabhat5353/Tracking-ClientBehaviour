@@ -38,9 +38,12 @@ export default function UserInteractionTable({
 
   const filteredSessions = useMemo(() => {
     return sessions.filter((s) => {
+      const term = search.toLowerCase();
       const matchSearch =
-        s.sessionId.toLowerCase().includes(search.toLowerCase()) ||
-        (s.initialPage && s.initialPage.toLowerCase().includes(search.toLowerCase()));
+        s.sessionId.toLowerCase().includes(term) ||
+        (s.initialPage && s.initialPage.toLowerCase().includes(term)) ||
+        (s.userName && s.userName.toLowerCase().includes(term)) ||
+        (s.userEmail && s.userEmail.toLowerCase().includes(term));
 
       const matchPage =
         filterPage === 'ALL' || (s.initialPage && s.initialPage.includes(filterPage));
@@ -92,7 +95,7 @@ export default function UserInteractionTable({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-white/5 bg-white/[0.02] text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              <th className="py-3 px-6">Session ID</th>
+              <th className="py-3 px-6">User / Session</th>
               <th className="py-3 px-6">Initial Landing Page</th>
               <th className="py-3 px-6">Duration</th>
               <th className="py-3 px-6">Total Events</th>
@@ -128,14 +131,32 @@ export default function UserInteractionTable({
                       isSelected ? 'bg-brand-600/10' : ''
                     }`}
                   >
-                    <td className="py-3.5 px-6 font-mono font-bold text-white">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`w-2 h-2 rounded-full ${
-                            isBounce ? 'bg-slate-500' : 'bg-emerald-400 animate-pulse'
-                          }`}
-                        />
-                        <span className="truncate max-w-[140px]">{s.sessionId}</span>
+                    <td className="py-3.5 px-6">
+                      <div className="flex items-center gap-2.5">
+                        {/* Avatar / Identity indicator */}
+                        {s.userName ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                              {s.userName.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase()}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-white font-semibold text-xs truncate max-w-[110px]">{s.userName}</span>
+                              <span className="text-slate-500 text-[10px] truncate max-w-[110px]">{s.userEmail || s.sessionId.substring(0,14) + '…'}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`w-2 h-2 rounded-full shrink-0 ${
+                                isBounce ? 'bg-slate-500' : 'bg-emerald-400 animate-pulse'
+                              }`}
+                            />
+                            <div className="flex flex-col">
+                              <span className="font-mono text-slate-300 text-[11px] truncate max-w-[130px]">{s.sessionId}</span>
+                              <span className="text-slate-600 text-[10px]">Anonymous visitor</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="py-3.5 px-6 font-mono text-slate-400">
