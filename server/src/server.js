@@ -95,7 +95,7 @@ let serverInstance = null;
 async function startServer() {
   try {
     await connectDB();
-    serverInstance = app.listen(PORT, () => {
+    serverInstance = app.listen(PORT, '0.0.0.0', () => {
       console.log(`====================================================`);
       console.log(`🚀 CausalFunnel Analytics Server listening on port ${PORT}`);
       console.log(`🛍️ E-Commerce Store: http://localhost:${PORT}/store/index.html`);

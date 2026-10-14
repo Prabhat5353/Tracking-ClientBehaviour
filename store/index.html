@@ -357,7 +357,15 @@
   </div>
 
   <!-- Load Standalone CausalFunnel Tracking Script -->
-  <script src="../tracker/tracker.js" data-api-endpoint="http://localhost:5000/api/events"></script>
+  <script>
+    (function() {
+      const script = document.createElement('script');
+      script.src = '/tracker/tracker.js';
+      const apiEndpoint = (window.location.origin.includes(':5173') ? 'http://localhost:5000' : window.location.origin) + '/api/events';
+      script.setAttribute('data-api-endpoint', apiEndpoint);
+      document.head.appendChild(script);
+    })();
+  </script>
   <!-- Store Logic -->
   <script src="js/products.js"></script>
   <script src="js/cart.js"></script>
@@ -365,7 +373,7 @@
 
   <!-- Auth Logic -->
   <script>
-    const AUTH_API = 'http://localhost:5000/api/auth';
+    const AUTH_API = (window.location.origin.includes(':5173') ? 'http://localhost:5000' : window.location.origin) + '/api/auth';
     const AUTH_TOKEN_KEY = 'lumina_auth_token';
     const AUTH_USER_KEY  = 'lumina_auth_user';
 
@@ -514,7 +522,7 @@
         window.CFAnalytics.resetSession();
       }
       updateNavAuth(null);
-      showToast('You've been signed out.');
+      showToast("You've been signed out.");
     }
 
     // ── Toast notification ─────────────────────────────────────────────────────

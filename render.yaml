@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: tracking-client-behaviour
+    env: node
+    plan: free
+    buildCommand: npm run build:client && cd server && npm install
+    startCommand: node server/src/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
