@@ -57,7 +57,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
         <div>
           <div className="flex items-center gap-2">
             <span className="font-extrabold text-sm tracking-wider uppercase text-white">
-              CausalFunnel
+              Lumina
             </span>
             <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-brand-500/20 text-brand-400 border border-brand-500/30">
               PRO

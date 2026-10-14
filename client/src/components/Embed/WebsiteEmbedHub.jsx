@@ -26,7 +26,7 @@ export default function WebsiteEmbedHub({ domains = [], onRefresh }) {
   const [isTesting, setIsTesting] = useState(false);
 
   // Computed Embed Snippet
-  const embedCode = `<!-- CausalFunnel Universal User Analytics & Session Tracker -->
+  const embedCode = `<!-- Lumina Universal User Analytics & Session Tracker -->
 <script
   src="${scriptUrl}"
   data-site-id="${siteId.trim() || 'my-website'}"
@@ -94,7 +94,7 @@ export default function WebsiteEmbedHub({ domains = [], onRefresh }) {
             <h2 className="text-lg font-bold text-white">Universal Third-Party Website Tracking</h2>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
-            You can install CausalFunnel on <strong>any website or client web app</strong>. Simply paste the lightweight (<strong className="text-brand-300">&lt; 5KB</strong>) snippet before the closing <code className="text-brand-400 font-mono bg-dark-900 px-1.5 py-0.5 rounded">&lt;/head&gt;</code> tag. It runs non-blockingly, works cross-origin, and captures complete sessions, click coordinates, and conversions automatically.
+            You can install Lumina Analytics on <strong>any website or client web app</strong>. Simply paste the lightweight (<strong className="text-brand-300">&lt; 5KB</strong>) snippet before the closing <code className="text-brand-400 font-mono bg-dark-900 px-1.5 py-0.5 rounded">&lt;/head&gt;</code> tag. It runs non-blockingly, works cross-origin, and captures complete sessions, click coordinates, and conversions automatically.
           </p>
         </div>
 
@@ -256,7 +256,7 @@ export default function WebsiteEmbedHub({ domains = [], onRefresh }) {
 <head>
   <meta charset="UTF-8">
   <title>Your Website</title>
-  <!-- Paste CausalFunnel Script Here -->
+  <!-- Paste Lumina Tracking Script Here -->
   <script src="${scriptUrl}" data-site-id="${siteId}" async></script>
 </head>
 <body>...</body>
@@ -362,7 +362,7 @@ const currentSessionId = window.CFAnalytics.getSessionId();`}
               <h3 className="font-bold text-white text-sm">Live Cross-Domain Embed Diagnostics</h3>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Verify that external websites can reach and ingest events into your CausalFunnel server.
+              Verify that external websites can reach and ingest events into your Lumina server.
             </p>
           </div>
 

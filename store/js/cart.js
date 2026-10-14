@@ -6,7 +6,7 @@ const Cart = (function () {
   const COUPON_KEY = 'lumina_coupon';
 
   const COUPONS = {
-    CAUSAL10: { code: 'CAUSAL10', type: 'percentage', value: 0.1, label: '10% CausalFunnel Special Discount' },
+    LUMINA10: { code: 'LUMINA10', type: 'percentage', value: 0.1, label: '10% Lumina Studio Discount' },
     WELCOME20: { code: 'WELCOME20', type: 'fixed', value: 20, label: '$20 First Order Welcome Bonus' },
     FREESHIP: { code: 'FREESHIP', type: 'shipping', value: 0, label: 'Complimentary Priority Shipping' },
   };
@@ -43,7 +43,7 @@ const Cart = (function () {
       notifyCartUpdated();
       return { success: true, coupon: COUPONS[cleanCode] };
     }
-    return { success: false, error: 'Invalid coupon code. Try CAUSAL10 for 10% off!' };
+    return { success: false, error: 'Invalid coupon code. Try LUMINA10 for 10% off!' };
   }
 
   function removeCoupon() {

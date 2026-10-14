@@ -19,7 +19,7 @@ export default function Navbar({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold text-white tracking-tight">CausalFunnel Analytics</h1>
+              <h1 className="text-base font-bold text-white tracking-tight">Lumina Analytics</h1>
               <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-emerald/10 text-brand-emerald border border-brand-emerald/20 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-emerald animate-pulse"></span>
                 Live

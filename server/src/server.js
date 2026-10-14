@@ -55,7 +55,7 @@ app.get('/', (req, res) => {
   }
 
   res.json({
-    name: 'CausalFunnel - User Analytics & Session Tracking API',
+    name: 'Lumina - User Analytics & Session Tracking API',
     version: '1.0.0',
     documentation: '/api/health',
     endpoints: {
@@ -97,7 +97,7 @@ async function startServer() {
     await connectDB();
     serverInstance = app.listen(PORT, '0.0.0.0', () => {
       console.log(`====================================================`);
-      console.log(`🚀 CausalFunnel Analytics Server listening on port ${PORT}`);
+      console.log(`🚀 Lumina Analytics Server listening on port ${PORT}`);
       console.log(`🛍️ E-Commerce Store: http://localhost:${PORT}/store/index.html`);
       console.log(`📡 API Base:         http://localhost:${PORT}/api`);
       console.log(`🌐 Legacy Demo:      http://localhost:${PORT}/demo/index.html`);

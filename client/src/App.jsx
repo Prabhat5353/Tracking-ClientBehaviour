@@ -231,7 +231,7 @@ export default function App() {
 
         {/* Global Footer */}
         <footer className="border-t border-white/5 py-4 px-8 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2 mt-auto bg-dark-900/30">
-          <p>CausalFunnel Enterprise Analytics Command Centre • Multi-Website Telemetry Engine</p>
+          <p>Lumina Enterprise Analytics Command Centre • Multi-Website Telemetry Engine</p>
           <div className="flex items-center gap-4 text-slate-400 font-mono text-[11px]">
             <span>Active Site: <strong className="text-white">{selectedSiteId}</strong></span>
             <span>•</span>
