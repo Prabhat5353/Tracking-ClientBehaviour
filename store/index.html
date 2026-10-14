@@ -274,7 +274,7 @@
       <button onclick="if(window.UserTracker){window.UserTracker.resetSession(); window.location.reload();}" style="flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 5px; border-radius: 6px; font-size: 0.72rem; cursor: pointer;">
         🔄 Reset Session
       </button>
-      <a href="http://localhost:5173" target="_blank" style="flex: 1; background: #3b82f6; color: #fff; padding: 5px; border-radius: 6px; font-size: 0.72rem; text-align: center; text-decoration: none; font-weight: bold;">
+      <a href="/dashboard/" target="_blank" style="flex: 1; background: #3b82f6; color: #fff; padding: 5px; border-radius: 6px; font-size: 0.72rem; text-align: center; text-decoration: none; font-weight: bold;">
         📊 Open Dashboard
       </a>
     </div>
@@ -373,7 +373,7 @@
 
   <!-- Auth Logic -->
   <script>
-    const AUTH_API = (window.location.origin.includes(':5173') ? 'http://localhost:5000' : window.location.origin) + '/api/auth';
+    const AUTH_API = (window.location.port === '5173' ? '/api/auth' : (window.location.origin + '/api/auth'));
     const AUTH_TOKEN_KEY = 'lumina_auth_token';
     const AUTH_USER_KEY  = 'lumina_auth_user';
 
@@ -453,7 +453,13 @@
             password: document.getElementById('loginPassword').value,
           }),
         });
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch(pe) {
+          throw new Error('Server returned unexpected response (status ' + res.status + '). Ensure the backend API is running.');
+        }
         if (!res.ok) throw new Error(data.error || 'Login failed');
         onAuthSuccess(data);
       } catch(err) {
@@ -482,7 +488,13 @@
             password: document.getElementById('regPassword').value,
           }),
         });
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch(pe) {
+          throw new Error('Server returned unexpected response (status ' + res.status + '). Ensure the backend API is running.');
+        }
         if (!res.ok) throw new Error(data.error || 'Registration failed');
         succEl.textContent = '🎉 Account created! Welcome to LUMINA.';
         succEl.style.display = 'block';

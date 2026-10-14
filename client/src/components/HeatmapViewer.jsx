@@ -232,8 +232,8 @@ export default function HeatmapViewer({ pages = [], onRefresh, isRefreshing }) {
           {/* Mock URL Address Bar */}
           <div className="bg-dark-900/90 px-4 py-1 rounded-lg border border-white/10 text-xs font-mono text-slate-300 flex items-center gap-2 max-w-md w-full justify-center">
             <Globe className="w-3.5 h-3.5 text-slate-500" />
-            <span className="text-slate-400">http://localhost:5000</span>
-            <span className="text-brand-cyan font-bold">{selectedUrl || '/demo/index.html'}</span>
+            <span className="text-slate-400">{typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'}</span>
+            <span className="text-brand-cyan font-bold">{selectedUrl || '/store/index.html'}</span>
           </div>
 
           <div className="text-[11px] text-slate-400 font-medium">
@@ -340,7 +340,7 @@ export default function HeatmapViewer({ pages = [], onRefresh, isRefreshing }) {
                 </div>
                 <p className="font-semibold text-slate-200">No clicks recorded for this URL yet</p>
                 <p className="text-xs text-slate-500 max-w-sm text-center mt-1">
-                  Open the demo page at <code className="text-brand-cyan">http://localhost:5000{selectedUrl}</code> and click around to generate real-time heatmap dots.
+                  Open the page at <code className="text-brand-cyan">{selectedUrl}</code> and click around to generate real-time heatmap dots.
                 </p>
               </div>
             )}

@@ -73,7 +73,7 @@ export default function App() {
       setServerError(null);
     } catch (err) {
       console.error('Error fetching analytics telemetry:', err);
-      setServerError('Unable to reach Analytics API server (http://localhost:5000). Ensure the backend is running.');
+      setServerError('Unable to reach Analytics API server. Ensure the backend service is running.');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);

@@ -93,7 +93,7 @@ export default function Navbar({
 
           {/* Open E-Commerce Storefront Link */}
           <a
-            href="http://localhost:5000/store/index.html"
+            href={typeof window !== 'undefined' && window.location.port === '5173' ? 'http://localhost:5000/store/index.html' : '/store/index.html'}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-brand-indigo/30 to-brand-blue/30 hover:from-brand-indigo/40 hover:to-brand-blue/40 text-xs font-semibold text-brand-cyan border border-brand-blue/40 transition-all shadow-sm"
