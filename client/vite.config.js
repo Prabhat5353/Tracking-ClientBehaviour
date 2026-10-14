@@ -6,8 +6,9 @@ export default defineConfig({
   base: '/dashboard/',
   plugins: [react()],
   server: {
-    port: 5173,
+    port: process.env.PORT || 5173,
     host: '0.0.0.0',
+    allowedHosts: true, // <-- Yeh line Render host block ko allow karegi
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
