@@ -213,8 +213,23 @@
     </div>
   </div>
 
+  <!-- Configuration for Backend URL (Change when deploying to Vercel/Render) -->
+  <script>
+    window.__BACKEND_URL__ = window.__BACKEND_URL__ || localStorage.getItem('lumina_backend_url') || '';
+  </script>
+
   <!-- Standalone Tracking Script -->
-  <script src="../tracker/tracker.js" data-api-endpoint="http://localhost:5000/api/events"></script>
+  <script>
+    (function() {
+      const script = document.createElement('script');
+      script.src = 'js/tracker.js';
+      const backendBase = window.__BACKEND_URL__ || (window.location.origin.includes(':5173') ? 'http://localhost:5000' : window.location.origin);
+      const apiEndpoint = backendBase.replace(/\/+$/, '') + '/api/events';
+      script.setAttribute('data-api-endpoint', apiEndpoint);
+      script.setAttribute('data-site-id', 'lumina-store');
+      document.head.appendChild(script);
+    })();
+  </script>
   <!-- Checkout Logic -->
   <script src="js/products.js"></script>
   <script src="js/cart.js"></script>

@@ -356,13 +356,22 @@
     </div>
   </div>
 
+  <!-- Configuration for Backend URL (Change when deploying to Vercel/Render) -->
+  <script>
+    // If backend is hosted separately (e.g., Render/Railway), set it here:
+    window.__BACKEND_URL__ = window.__BACKEND_URL__ || localStorage.getItem('lumina_backend_url') || '';
+  </script>
+
   <!-- Load Standalone Lumina Tracking Script -->
   <script>
     (function() {
       const script = document.createElement('script');
-      script.src = '/tracker/tracker.js';
-      const apiEndpoint = (window.location.origin.includes(':5173') ? 'http://localhost:5000' : window.location.origin) + '/api/events';
+      // Look for local store tracker first, fallback to root tracker
+      script.src = 'js/tracker.js';
+      const backendBase = window.__BACKEND_URL__ || (window.location.origin.includes(':5173') ? 'http://localhost:5000' : window.location.origin);
+      const apiEndpoint = backendBase.replace(/\/+$/, '') + '/api/events';
       script.setAttribute('data-api-endpoint', apiEndpoint);
+      script.setAttribute('data-site-id', 'lumina-store');
       document.head.appendChild(script);
     })();
   </script>
@@ -373,7 +382,8 @@
 
   <!-- Auth Logic -->
   <script>
-    const AUTH_API = (window.location.port === '5173' ? '/api/auth' : (window.location.origin + '/api/auth'));
+    const backendBase = window.__BACKEND_URL__ || (window.location.port === '5173' ? 'http://localhost:5000' : window.location.origin);
+    const AUTH_API = backendBase.replace(/\/+$/, '') + '/api/auth';
     const AUTH_TOKEN_KEY = 'lumina_auth_token';
     const AUTH_USER_KEY  = 'lumina_auth_user';
 
