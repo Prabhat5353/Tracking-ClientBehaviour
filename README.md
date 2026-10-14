@@ -1,4 +1,4 @@
-# ⚡ CausalFunnel — User Analytics & Session Tracking Application
+# ⚡  User Analytics & Session Tracking Application
 
 > **Full Stack Engineer Role Assignment Submission**  
 > A lightweight, production-grade, end-to-end user analytics and session tracking platform built to help e-commerce businesses understand user interactions and journeys.
